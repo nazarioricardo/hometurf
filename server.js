@@ -2,7 +2,7 @@ const express = require('express')
 const handlebars = require('express-handlebars')
 const bodyParser = require('body-parser')
 const mongoose = require('mongoose')
-const community = require('./models/community')
+const Community = require('./models/community')
 
 const app = express()
 
@@ -23,8 +23,9 @@ app.set('view engine', 'handlebars')
 app.get('/community/:id/admin', function (req, res) {
 
     // Community admin homepage
-    community.findById(req.params.id, function (err, community) {
+    Community.findById(req.params.id, function (err, community) {
         if (err) {
+            console.log('GOT AN ERROR')
             return res.send(err)
         }
         return res.render('community-admin', community)
@@ -34,6 +35,12 @@ app.get('/community/:id/admin', function (req, res) {
 app.get('/communities', function (req, res) {
     
     // Get list of communities
+    community.find(function (err, communities) {
+        if (err) {
+            return res.json({error: err, status: 500})
+        }
+        return res.json(communities)
+    })
 })
 
 app.listen(3000, function(req, res) {
