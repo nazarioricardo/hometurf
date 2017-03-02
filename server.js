@@ -2,7 +2,7 @@ const express = require('express')
 const handlebars = require('express-handlebars')
 const bodyParser = require('body-parser')
 const mongoose = require('mongoose')
-const Community = require('./models/community')
+const Models = require('./models/index')
 
 const app = express()
 
@@ -17,31 +17,35 @@ app.use(express.static('public')) // TODO: Public folder doesn't exist right now
 app.engine('handlebars', handlebars({
     defaultLayout: 'main'
 }))
-
 app.set('view engine', 'handlebars')
 
-app.get('/community/:id/admin', function (req, res) {
+// Route Handlers
+
+app.get('/community/:id/admin', communityHomepage)
+app.get('/communities', allCommunities)
+
+function communityHomepage (req, res) {
 
     // Community admin homepage
-    Community.findById(req.params.id, function (err, community) {
+    Models.community.findById(req.params.id, function (err, community) {
         if (err) {
             console.log('GOT AN ERROR')
             return res.send(err)
         }
         return res.render('community-admin', community)
     })
-})
+}
 
-app.get('/communities', function (req, res) {
+function allCommunities (req, res) {
     
     // Get list of communities
-    community.find(function (err, communities) {
+    Models.community.find(function (err, communities) {
         if (err) {
             return res.json({error: err, status: 500})
         }
         return res.json(communities)
     })
-})
+}
 
 app.listen(3000, function(req, res) {
     console.log('Server listening on port 3000')
