@@ -16,6 +16,11 @@ const communitySchema = mongoose.Schema({
         required: true
     },
 
+    admin: {  
+        // User
+        type: String,
+        required: true
+    }
 })
 
 module.exports = mongoose.model("community", communitySchema)

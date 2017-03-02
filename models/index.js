@@ -1,11 +1,9 @@
 function Models() {
 
-
-    let community = require('./community')
-    let superUnit = require('./super-unit')
-    let unit = require('./unit')
-
-    return this
+    return {
+        community: require('./community'),
+        unit: require('./unit')
+    }
 }
 
 module.exports = Models
