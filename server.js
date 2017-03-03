@@ -1,49 +1,65 @@
-const express = require('express')
-const handlebars = require('express-handlebars')
 const bodyParser = require('body-parser')
 const mongoose = require('mongoose')
-const Models = require('./models/index')
+const passport = require('passport')
 
-const app = express()
+const Strategy = require('passport-local').Strategy
+const User = require('./models/user')
+
+const app = require('express')()
+
+// Declare auth strategy
+passport.use(new LocalStrategy(
+    function(username, password, done) {
+        User.findOne({username: username}, function(err, user) {
+            if (err) return done(err)
+            if (!user) return done(null, false)
+            if (!user.verifyPassword(password)) return done(null, false)
+            return done(null, user)
+        })
+    }
+))
+
+passport.serializeUser(function(user, cb) {
+  cb(null, user.id);
+});
+
+passport.deserializeUser(function(id, cb) {
+  User.findById(id, function (err, user) {
+    if (err) { return cb(err); }
+    cb(null, user);
+  });
+});
 
 // Connect to database
 mongoose.Promise = global.Promise;
 mongoose.connect('mongodb://localhost/hometurf') // Create database 
 
-// Configure static files (for handlebars)
-app.use(express.static('public')) // TODO: Public folder doesn't exist right now
-
-// Configure template engine for the server
-app.engine('handlebars', handlebars({
-    defaultLayout: 'main'
-}))
-app.set('view engine', 'handlebars')
-
 // Route Handlers
+app.get('/', getHomePage)
+app.get('/login', getLogInPage)
+app.post('/login', passport.authenticate('local', {failureRedirect: '/login'}), logInUser)
+app.post('/signup', createNewUser)
 
-app.get('/community/:id/admin', communityHomepage)
-app.get('/communities', allCommunities)
+// Route Handler Callbacks
+function getHomePage(req, res) {
 
-function communityHomepage (req, res) {
-
-    // Community admin homepage
-    Models.community.findById(req.params.id, function (err, community) {
-        if (err) {
-            console.log('GOT AN ERROR')
-            return res.send(err)
-        }
-        return res.render('community-admin', community)
-    })
 }
 
-function allCommunities (req, res) {
-    
-    // Get list of communities
-    Models.community.find(function (err, communities) {
-        if (err) {
-            return res.json({error: err, status: 500})
-        }
-        return res.json(communities)
+function getLogInPage(req, res) {
+
+}
+
+function logInUser(req, res) {
+    res.redirect('/')
+}
+
+function createNewUser(req, res) {
+    User.create(req.body, function(err, human) {
+        if (err) return next(err)
+
+        user = user.toJson()
+        delete user.password
+        return res.status(201).json(user)
     })
 }
 
