@@ -16,7 +16,8 @@ const userSchema = mongoose.Schema({
     access: {
         type: String,
         required: true,
-        enum: ['community-admin', 'security', 'resident']
+        enum: ['community-admin', 'security', 'resident'],
+        default: "resident"
     },
     
     created: {
@@ -35,17 +36,17 @@ userSchema.pre('save', function(next) {
     bcrypt.genSalt(10, function(err, salt) {
         if (err) return next(err)
 
-        bcrypt.hash(human.password, salt, function(err, hash) {
+        bcrypt.hash(user.password, salt, function(err, hash) {
             if (err) return next(err)
 
-            // Overried clear text password with the hashed password
-            human.password = hash
+            // Override clear text password with the hashed password
+            user.password = hash
             return next()
         })
     })
 })
 
-userSchema.methods.comparePassword = function(candidatePassword, cb) {
+userSchema.methods.verifyPassword = function(candidatePassword, cb) {
     bcrypt.compare(candidatePassword, this.password, cb)
 }
 

@@ -16,10 +16,16 @@ const communitySchema = mongoose.Schema({
         required: true
     },
 
-    admin: {  
+    adminId: {  
         // User
         type: String,
         required: true
+    },
+
+    created: {
+        type: Date,
+        required: true,
+        default: Date.now
     }
 })
 
