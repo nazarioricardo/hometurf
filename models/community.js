@@ -22,6 +22,11 @@ const communitySchema = mongoose.Schema({
         required: true
     },
 
+    city: {
+        type: String,
+        required: true
+    },
+
     created: {
         type: Date,
         required: true,

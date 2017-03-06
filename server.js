@@ -30,12 +30,12 @@ passport.use('local-signup', new LocalStrategy({
 ))
 
 passport.use('local', new LocalStrategy(
-    function(username, password, done) {
+    function(req, username, password, done) {
         User.findOne({username: username}, function(err, user) {
             if (err) return done(err)
-            if (!user) return done(null, false)
-            if (!user.verifyPassword(password)) return done(null, false)
-            return done(null, user)
+            if (!user) return done(null, false) // No user found with username
+            if (!user.verifyPassword(password)) return done(null, false) // Password did not match
+            return done(null, user) // Successful login
         })
     }
 ))
@@ -63,11 +63,13 @@ app.use(function(err, req, res, next) {
 app.get('/:userId', getHomePage)
 
 app.get('/login', getLogInPage)
+
 app.post('/login', passport.authenticate('local'), bodyParser.json(), logInUser)
+
 app.post('/signup', bodyParser.json(), createNewUser)
 
-app.get('/communities', bodyParser.json(), getAllCommunities)
-app.post('/communities', createCommunity)
+app.get('/communities/:city', bodyParser.json(), getCommunitiesByCity)
+app.post('/community', bodyParser.json(), createCommunity)
 
 // Route Handler Callbacks
 function getHomePage(req, res) {
@@ -93,21 +95,27 @@ function createNewUser(req, res) {
     })
 }
 
-function getAllCommunities(req, res) {
+function getCommunitiesByCity(req, res) {
 
-    Community.find(function(err, results) {
-        return res.status(404).json(results)
-    })
+    let city = req.params.city
+
+    Community.find({"city":city})
 }
 
 function createCommunity(req, res) {
-    console.log(req.params.id)
-    Community.create(req.body, function(err, comm) {
+    Community.create(req.body, function(err, community) {
         if (err) return next(err)
 
-        comm = comm.toJSON()
-        return res.status(201).json(comm)
+        community = community.toJSON()
+        return res.status(201).json(community)
     })
+}
+
+function isLoggedIn(req, res, next) {
+
+    if (req.isAuthenticated()) return next()
+    
+    res.redirect('/login')
 }
 
 app.listen(3000, function(req, res) {
