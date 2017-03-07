@@ -19,7 +19,8 @@ const communitySchema = mongoose.Schema({
     adminId: {  
         // User
         type: String,
-        required: true
+        required: true,
+        unique: true
     },
 
     city: {

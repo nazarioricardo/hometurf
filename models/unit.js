@@ -11,7 +11,7 @@ const unitSchema = mongoose.Schema({
         required: true
     },
 
-    community: {
+    communityId: {
         type: String,
         required: true
     },

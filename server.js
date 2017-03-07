@@ -1,96 +1,91 @@
 const bodyParser = require('body-parser')
 const mongoose = require('mongoose')
 const passport = require('passport')
+const cookieParser = require('cookie-parser')
 
 const LocalStrategy = require('passport-local').Strategy
+const Session = require('express-session')
 const User = require('./models/user')
 const Community = require('./models/community')
+const Unit = require('./models/unit')
 
 const app = require('express')()
 
 // Connect to database
-mongoose.Promise = global.Promise;
+mongoose.Promise = global.Promise
 mongoose.connect('mongodb://localhost/hometurf')
 
 // Declare auth strategy
-passport.use('local-signup', new LocalStrategy({
-    usernameField: 'username',
-    passwordField: 'password',
-    passReqToCallback: true
-},
-    function(req, username, password, done) {
-        process.nextTick(function() {
-            User.findOne({username:'username'}, function(err, user) {
-                if (user) {
-                    return done(null, false, req.flash('signupMessage', 'That username is already taken'))
+passport.use('local', new LocalStrategy(
+    function(username, password, next) {
+        User.findOne({username: username}, function(err, user) {
+            // console.log(user)
+            if (err) return next(err)
+            if (!user) return next(null, false) // No user found with username
+            user.verifyPassword(password, function (err, passwordMatch) {
+                if (err) console.log(err)
+                if (passwordMatch) {
+                    return next(null, user) // Success
                 }
+                return next(null, false) // Password did not match
             })
         })
     }
 ))
 
-passport.use('local', new LocalStrategy(
-    function(req, username, password, done) {
-        User.findOne({username: username}, function(err, user) {
-            if (err) return done(err)
-            if (!user) return done(null, false) // No user found with username
-            if (!user.verifyPassword(password)) return done(null, false) // Password did not match
-            return done(null, user) // Successful login
-        })
-    }
-))
-
-passport.serializeUser(function(user, cb) {
-    cb(null, user.id)
+passport.serializeUser(function(user, callback) {
+    callback(null, user.id)
 })
 
-passport.deserializeUser(function(id, cb) {
+passport.deserializeUser(function(id, callback) {
     User.findById(id, function (err, user) {
-        if (err) { return cb(err) }
-        cb(null, user)
+        if (err) return callback(err) 
+        if (!user) return callback(err, false)
+        return callback(null, user)
     })
 })
 
-app.use(function(err, req, res, next) {
-    if (err.name === 'ValidationError') {
-        return res.status(400).json(err.errors);
-    }
-    console.log(err);
-    return res.status(500).send();
-})
+app.use(cookieParser())
+app.use(bodyParser.json())
+app.use(Session({secret: 'fishing cats'}))
+app.use(passport.initialize())
+app.use(passport.session())
 
 // Route Handlers
-app.get('/:userId', getHomePage)
-
 app.get('/login', getLogInPage)
+app.get('/dashboard/:userId', bodyParser.json(), getHomePage)
 
-app.post('/login', passport.authenticate('local'), bodyParser.json(), logInUser)
+app.post('/login', passport.authenticate('local', {failureRedirect: '/login'}), logInUser)
+app.post('/signup', createNewUser)
 
-app.post('/signup', bodyParser.json(), createNewUser)
-
-app.get('/communities/:city', bodyParser.json(), getCommunitiesByCity)
-app.post('/community', bodyParser.json(), createCommunity)
+app.get('/communities/:city', isLoggedIn, getCommunitiesByCity)
+app.post('/community', isLoggedIn, bodyParser.json(), createCommunity)
+app.post('/community/:cId', isLoggedIn, bodyParser.json(), addUnitsToCommunity)
 
 // Route Handler Callbacks
 function getHomePage(req, res) {
-    
+    User.findOne({'_id': req.params.id}, function(err, user) {
+        if (err) return res.status(404).json(err)
+        if (!user) return res.status(404).json({message: "No user with id"}) // No user found with id
+        return res.status(201).json(user)
+    })
 }
 
 function getLogInPage(req, res) {
-
+    return res.status(200).json({message: "Please log in"})
 }
 
 function logInUser(req, res) {
-    return res.status(201).json(req.user.username)
+    return res.status(200).json({user:req.user.username, message:"success"})
 }
 
 function createNewUser(req, res) {
-    User.create(req.body, function(err, user) {
-        if (err) return next(err)
 
-        user = user.toJSON()
-        delete user.password
-        // res.redirect('/login')
+    let user = new User(req.body)
+    
+    user.save(function(err, user) {
+        if (err) return next(err)
+        if (!user) return done(null, false)
         return res.status(201).json(user)
     })
 }
@@ -98,24 +93,56 @@ function createNewUser(req, res) {
 function getCommunitiesByCity(req, res) {
 
     let city = req.params.city
+    console.log("Current user: " + req.user.username)
 
-    Community.find({"city":city})
+    Community.findOne({city: city}, function(err, community) {
+        if (err) return res.status(404).json(err)
+        if (!community) return res.status(404).json({message: "No comm in city"})
+        return res.status(200).json(community)
+    })
 }
 
 function createCommunity(req, res) {
-    Community.create(req.body, function(err, community) {
-        if (err) return next(err)
 
+    let userId = req.user._id
+    req.body.adminId = userId
+
+    User.findOneAndUpdate({_id: userId}, {$set: {access:"community-admin"}}, function(err, user) {
+        if (err) return next(err)
+    })
+
+    Community.create(req.body, function(err, community) {
+        if (err) return res.status(404)
         community = community.toJSON()
         return res.status(201).json(community)
     })
 }
 
-function isLoggedIn(req, res, next) {
-
-    if (req.isAuthenticated()) return next()
+function addUnitsToCommunity(req, res) {
     
-    res.redirect('/login')
+    let listOfUnits = req.body
+    let resList = new Array()
+    for (var i = 0; i < listOfUnits.length; i++) {
+
+        let newUnit = new Unit(listOfUnits[i])
+        newUnit.communityId = req.params.cId                
+        // console.log(newUnit)
+
+        // Tried newUnit.save() but kept getting "save is not a function"
+        Unit.create(newUnit, function(err, unit) {
+            if (err) return res.status(404)
+            if (!unit) return res.status(404)
+            resList.push(unit)
+        })
+    }  
+    // Keeps loading without .json()
+    return res.status(201).json(resList)
+}
+
+function isLoggedIn(req, res, next) {
+    // console.log("Current user: " + req.user.username)
+    if (req.isAuthenticated()) return next()
+    return res.redirect('/login')
 }
 
 app.listen(3000, function(req, res) {
