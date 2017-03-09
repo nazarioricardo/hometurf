@@ -59,8 +59,9 @@ app.post('/login', passport.authenticate('local', {failureRedirect: '/login'}), 
 app.post('/signup', createNewUser)
 
 app.get('/communities', getCommunities)
-app.get('/communities/:city', isLoggedIn, getCommunitiesByCity)
-app.get('/community/:communityId', isLoggedIn, getSuperUnits)
+app.get('/findCommunity/:city', isLoggedIn, getCommunitiesByCity)
+app.get('/findSuperUnit/:communityId', isLoggedIn, getSuperUnits)
+app.get('/findUnit/:superUnitId', isLoggedIn, getUnits)
 app.post('/community/:communityId', isLoggedIn, addUnitsToCommunity)
 app.post('/community', isLoggedIn,createCommunity)
 
