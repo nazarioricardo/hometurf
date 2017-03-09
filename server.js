@@ -53,30 +53,35 @@ app.use(passport.session())
 
 // Route Handlers
 app.get('/login', getLogInPage)
-app.get('/dashboard/:userId', bodyParser.json(), getHomePage)
+app.get('/dashboard', isLoggedIn, getDashboard)
 
 app.post('/login', passport.authenticate('local', {failureRedirect: '/login'}), logInUser)
 app.post('/signup', createNewUser)
 
+app.get('/communities', getCommunities)
 app.get('/communities/:city', isLoggedIn, getCommunitiesByCity)
-app.post('/community', isLoggedIn, bodyParser.json(), createCommunity)
-app.post('/community/:cId', isLoggedIn, bodyParser.json(), addUnitsToCommunity)
+app.get('/community/:communityId', isLoggedIn, getSuperUnits)
+app.post('/community/:communityId', isLoggedIn, addUnitsToCommunity)
+app.post('/community', isLoggedIn,createCommunity)
 
 // Route Handler Callbacks
-function getHomePage(req, res) {
-    User.findOne({'_id': req.params.id}, function(err, user) {
+function getDashboard(req, res) {
+    let access = req.user.access
+    let userId = req.user._id
+
+    Unit.find({residents: userId}, function(err, units) {
         if (err) return res.status(404).json(err)
-        if (!user) return res.status(404).json({message: "No user with id"}) // No user found with id
-        return res.status(201).json(user)
+        if (!units) return res.redirect('/communities')
+        return res.json(units)
     })
 }
 
 function getLogInPage(req, res) {
-    return res.status(200).json({message: "Please log in"})
+    return res.json({message: "Please log in"})
 }
 
 function logInUser(req, res) {
-    return res.status(200).json({user:req.user.username, message:"success"})
+    return res.redirect('/dashboard')
 }
 
 function createNewUser(req, res) {
@@ -86,20 +91,37 @@ function createNewUser(req, res) {
     user.save(function(err, user) {
         if (err) return next(err)
         if (!user) return done(null, false)
-        return res.status(201).json(user)
+        return res.json(user)
     })
+}
+
+function getCommunities(req, res) {
+    return res.json({message: "To begin your search, type the city in which you live."})
 }
 
 function getCommunitiesByCity(req, res) {
 
     let city = req.params.city
-    console.log("Current user: " + req.user.username)
 
-    Community.findOne({city: city}, function(err, community) {
-        if (err) return res.status(404).json(err)
-        if (!community) return res.status(404).json({message: "No comm in city"})
-        return res.status(200).json(community)
+    Community.find({city: city}, function(err, communities) {
+        if (err) return res.json(err)
+        if (!communities) return res.json({message: "No community in city"})
+        console.log(communities)
+        return res.json(communities)
     })
+}
+
+function getSuperUnits(req, res) {
+    Unit.find({communityId: req.params.communityId}).distinct('superUnit', function(err, superUnits) {
+        console.log(superUnits)
+        if (err) return res.json(err)
+        if (!superUnits) return res.json({message: "No units found"})
+        return res.json(superUnits)
+    })
+}
+
+function getUnits(req, res) {
+
 }
 
 function createCommunity(req, res) {
@@ -114,7 +136,7 @@ function createCommunity(req, res) {
     Community.create(req.body, function(err, community) {
         if (err) return res.status(404)
         community = community.toJSON()
-        return res.status(201).json(community)
+        return res.json(community)
     })
 }
 
