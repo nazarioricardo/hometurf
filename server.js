@@ -8,6 +8,7 @@ const Session = require('express-session')
 const User = require('./models/user')
 const Community = require('./models/community')
 const Unit = require('./models/unit')
+const Guest = require('./models/guest')
 
 const app = require('express')()
 
@@ -51,29 +52,54 @@ app.use(Session({secret: 'fishing cats'}))
 app.use(passport.initialize())
 app.use(passport.session())
 
-// Route Handlers
-app.get('/login', getLogInPage)
-app.get('/dashboard', isLoggedIn, getDashboard)
+/**
+ * Route Handlers
+ */
 
+// Login/Signup
+app.get('/login', getLogInPage)
 app.post('/login', passport.authenticate('local', {failureRedirect: '/login'}), logInUser)
 app.post('/signup', createNewUser)
 
-app.get('/communities', getCommunities)
+//Dashboard
+app.get('/dashboard', isLoggedIn, getDashboard)
+app.post('/addGuest/:unitId', isLoggedIn, addGuest)
+
+// Onboarding
+app.get('/findCommunity', getCommunities)
 app.get('/findCommunity/:city', isLoggedIn, getCommunitiesByCity)
 app.get('/findSuperUnit/:communityId', isLoggedIn, getSuperUnits)
-app.get('/findUnit/:superUnitId', isLoggedIn, getUnits)
+app.get('/findUnit/:communityId/:superUnit', isLoggedIn, getUnits)
+app.post('/addUnit/:unitId', isLoggedIn, addUserToUnit)
+
+
 app.post('/community/:communityId', isLoggedIn, addUnitsToCommunity)
 app.post('/community', isLoggedIn,createCommunity)
 
-// Route Handler Callbacks
+/**
+ * Callbacks
+ */
+
 function getDashboard(req, res) {
     let access = req.user.access
     let userId = req.user._id
 
     Unit.find({residents: userId}, function(err, units) {
-        if (err) return res.status(404).json(err)
+        if (err) return res.status(404)
         if (!units) return res.redirect('/communities')
         return res.json(units)
+    })
+}
+
+function addGuest(req, res) {
+    
+    let guest = new Guest(req.body)
+    guest.unit = req.params.unitId
+    guest.approvedBy = req.user._id
+
+    guest.save(function(err, guest) {
+        if (err) return res.json(err)
+        return res.json(guest)
     })
 }
 
@@ -90,8 +116,7 @@ function createNewUser(req, res) {
     let user = new User(req.body)
     
     user.save(function(err, user) {
-        if (err) return next(err)
-        if (!user) return done(null, false)
+        if (err) return res.json(err)
         return res.json(user)
     })
 }
@@ -112,17 +137,32 @@ function getCommunitiesByCity(req, res) {
     })
 }
 
+
 function getSuperUnits(req, res) {
     Unit.find({communityId: req.params.communityId}).distinct('superUnit', function(err, superUnits) {
         console.log(superUnits)
         if (err) return res.json(err)
-        if (!superUnits) return res.json({message: "No units found"})
+        if (!superUnits) return res.json({message: "No super units found"})
         return res.json(superUnits)
     })
 }
 
 function getUnits(req, res) {
+    Unit.find({communityId: req.params.communityId, superUnit: req.params.superUnit}, function(err, units) {
+        if (err) return res.json(err)
+        if (!units) return res.json({message: "No units found"})
+        return res.json(units)
+    })
+}
 
+function addUserToUnit(req, res) {
+
+    let unitId = req.params.unitId
+
+    Unit.findOneAndUpdate({_id: unitId}, {$push: {residents:req.user._id}}, function(err, unit) {
+        if (err) return next(err)
+        return res.json(unit)
+    })
 }
 
 function createCommunity(req, res) {
@@ -159,7 +199,7 @@ function addUnitsToCommunity(req, res) {
         })
     }  
     // Keeps loading without .json()
-    return res.status(201).json(resList)
+    return res.json(resList)
 }
 
 function isLoggedIn(req, res, next) {
