@@ -23,6 +23,11 @@ const communitySchema = mongoose.Schema({
         unique: true
     },
 
+    securityId: {
+        type: String,
+        unique: true
+    },
+
     city: {
         type: String,
         required: true

@@ -6,6 +6,11 @@ const guestSchema = mongoose.Schema({
         required: true
     },
 
+    community: {
+        type: String,
+        required: true
+    },
+
     unit: {
         type: String,
         required: true
@@ -13,13 +18,16 @@ const guestSchema = mongoose.Schema({
 
     approvedBy: {
         type: String,
-        required: true
+    },
+
+    initiatedBy: {
+        type: String,
     },
 
     status: {
         type: String,
         required: true,
-        enum: ["In Transit", "Passed Gate", "Confirmed", "Left"],
+        enum: ["In Transit", "Passed Gate", "Confirmed", "Left Community"],
         default: "In Transit"
     },
 

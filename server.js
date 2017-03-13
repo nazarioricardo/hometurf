@@ -72,36 +72,19 @@ app.get('/findSuperUnit/:communityId', isLoggedIn, getSuperUnits)
 app.get('/findUnit/:communityId/:superUnit', isLoggedIn, getUnits)
 app.post('/addUnit/:unitId', isLoggedIn, addUserToUnit)
 
-
+// Community Admin
 app.post('/community/:communityId', isLoggedIn, addUnitsToCommunity)
-app.post('/community', isLoggedIn,createCommunity)
+app.post('/community', isLoggedIn, createCommunity)
+
+// Security Guard
+app.get('/security/guests/:communityId', isLoggedIn, getGuests)
+app.post('/updateGuest/:guestId', isLoggedIn, updateGuest)
 
 /**
  * Callbacks
  */
 
-function getDashboard(req, res) {
-    let access = req.user.access
-    let userId = req.user._id
-
-    Unit.find({residents: userId}, function(err, units) {
-        if (err) return res.status(404)
-        if (!units) return res.redirect('/communities')
-        return res.json(units)
-    })
-}
-
-function addGuest(req, res) {
-    
-    let guest = new Guest(req.body)
-    guest.unit = req.params.unitId
-    guest.approvedBy = req.user._id
-
-    guest.save(function(err, guest) {
-        if (err) return res.json(err)
-        return res.json(guest)
-    })
-}
+// Login/Signup
 
 function getLogInPage(req, res) {
     return res.json({message: "Please log in"})
@@ -121,6 +104,42 @@ function createNewUser(req, res) {
     })
 }
 
+// Dashboard
+
+function getDashboard(req, res) {
+    let access = req.user.access
+    let userId = req.user._id
+
+    Unit.find({residents: userId}, function(err, units) {
+        if (err) return res.status(404)
+        if (!units) return res.redirect('/communities')
+        return res.json(units)
+    })
+}
+
+function addGuest(req, res) {
+    
+    let guest = new Guest(req.body)
+    
+    if (req.user.access != 'security') {
+
+        guest.unit = req.params.unitId
+        guest.approvedBy = req.user._id
+
+        Unit.findOne({_id: guest.unit}, function(err, unit) {
+            if (err) return res.json(err)
+            if (!unit) return res.json({message: "No unit found"})
+            guest.community = unit.communityId
+            guest.save(function(err, guest) {
+                if (err) return res.json(err)
+                return res.json(guest)
+            })
+        })
+    }
+}
+
+// Onboarding
+
 function getCommunities(req, res) {
     return res.json({message: "To begin your search, type the city in which you live."})
 }
@@ -136,7 +155,6 @@ function getCommunitiesByCity(req, res) {
         return res.json(communities)
     })
 }
-
 
 function getSuperUnits(req, res) {
     Unit.find({communityId: req.params.communityId}).distinct('superUnit', function(err, superUnits) {
@@ -165,42 +183,104 @@ function addUserToUnit(req, res) {
     })
 }
 
+// Community Admin
+
 function createCommunity(req, res) {
 
     let userId = req.user._id
+    let userAccess = req.user.access
     req.body.adminId = userId
 
-    User.findOneAndUpdate({_id: userId}, {$set: {access:"community-admin"}}, function(err, user) {
-        if (err) return next(err)
-    })
+    if (userAccess == "community-admin") {
 
-    Community.create(req.body, function(err, community) {
-        if (err) return res.status(404)
-        community = community.toJSON()
-        return res.json(community)
-    })
+        let community = new Community()
+
+        community.save(function(err, community) {
+            if (err) return res.json(err)
+            return res.json(community)
+        })  
+    }
 }
 
 function addUnitsToCommunity(req, res) {
     
-    let listOfUnits = req.body
-    let resList = new Array()
-    for (var i = 0; i < listOfUnits.length; i++) {
+    if (req.user.access == 'community-admin') {
+        let listOfUnits = req.body
+        let resList = new Array()
+        for (var i = 0; i < listOfUnits.length; i++) {
 
-        let newUnit = new Unit(listOfUnits[i])
-        newUnit.communityId = req.params.cId                
-        // console.log(newUnit)
+            let newUnit = new Unit(listOfUnits[i])
+            newUnit.communityId = req.params.cId                
+            // console.log(newUnit)
 
-        // Tried newUnit.save() but kept getting "save is not a function"
-        Unit.create(newUnit, function(err, unit) {
-            if (err) return res.status(404)
-            if (!unit) return res.status(404)
-            resList.push(unit)
-        })
-    }  
-    // Keeps loading without .json()
-    return res.json(resList)
+            // Tried newUnit.save() but kept getting "save is not a function"
+            Unit.create(newUnit, function(err, unit) {
+                if (err) return res.status(404)
+                if (!unit) return res.status(404)
+                resList.push(unit)
+            })
+        }  
+        return res.json(resList)
+    }
 }
+
+// Security
+
+function getGuests(req, res) {
+
+    if (req.user.access !== "security") {
+        return res.status(403)
+    }
+
+    let communityId
+
+    Community.findOne({securityId: req.user._id}, function(err, community) {
+        if (err) return res.json(err)
+        if (!community) return res.json({message: "No community found"})
+        
+        communityId = community._id
+
+            Guest.find({community: communityId}, function(err, guests) {
+            if (err) return res.json(err)
+            if (!guests) return res.json({message: "No guests found"})
+            return res.json(guests)
+        })
+    })
+
+    
+}
+
+function updateGuest(req, res) {
+    
+    let guestId = req.params.guestId
+    let issuerAccess = req.user.access
+
+    Guest.findById(guestId, function(err, guest) {
+        let status = ''
+        if (issuerAccess == "security") {
+            if (guest.status == 'In Transit') {
+                guest.update({status: 'Passed Gate'}, function(err, guest) {
+                    if (err) return res.json(err)
+                    return res.json(guest)
+                })
+            } else if (guest.status == 'Confirmed') {
+                guest.update({status: 'Left Community'}, function(err, guest) {
+                    if (err) return res.json(err)
+                    return res.json(guest)
+                })
+            } 
+        } else {
+            if (guest.status == "Passed Gate") {
+                guest.update({status: 'Confirmed'}, function(err, guest) {
+                    if (err) return res.json(err)
+                    return res.json(guest)
+                })
+            }
+        }
+    })
+}
+
+// Middleware
 
 function isLoggedIn(req, res, next) {
     // console.log("Current user: " + req.user.username)
