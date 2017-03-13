@@ -17,7 +17,7 @@ const unitSchema = mongoose.Schema({
     },
 
     residents: {
-        type: Array,   
+        type: [String],   
     }
 })
 

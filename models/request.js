@@ -1,13 +1,13 @@
 const mongoose = require('mongoose')
 
-const guestSchema = mongoose.Schema({
-    name: {
+const requestSchema = mongoose.Schema({
+    from: {
         type: String,
         required: true
     },
 
-    community: {
-        type: String,
+    to: {
+        type: [String],
         required: true
     },
 
@@ -16,15 +16,14 @@ const guestSchema = mongoose.Schema({
         required: true
     },
 
-    approvedBy: {
-        type: String,
-    },
-
-    status: {
+    requestType: {
         type: String,
         required: true,
-        enum: ["In Transit", "Passed Gate", "Confirmed", "Left Community"],
-        default: "In Transit"
+        enum: ['New Resident Request', 'Guest Request']
+    },
+
+    message: {
+        type: String,
     },
 
     created: {
@@ -34,4 +33,4 @@ const guestSchema = mongoose.Schema({
     }
 })
 
-module.exports = mongoose.model("guest", guestSchema)
+module.exports = mongoose.model("request", requestSchema)
