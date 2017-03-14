@@ -1,0 +1,1382 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <title>Code coverage report for Hometurf/server.js</title>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="../prettify.css" />
+    <link rel="stylesheet" href="../base.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style type='text/css'>
+        .coverage-summary .sorter {
+            background-image: url(../sort-arrow-sprite.png);
+        }
+    </style>
+</head>
+<body>
+<div class='wrapper'>
+  <div class='pad1'>
+    <h1>
+      <a href="../index.html">All files</a> / <a href="index.html">Hometurf</a> server.js
+    </h1>
+    <div class='clearfix'>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">17.28% </span>
+        <span class="quiet">Statements</span>
+        <span class='fraction'>47/272</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">0.83% </span>
+        <span class="quiet">Branches</span>
+        <span class='fraction'>1/120</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">5.17% </span>
+        <span class="quiet">Functions</span>
+        <span class='fraction'>3/58</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">20.26% </span>
+        <span class="quiet">Lines</span>
+        <span class='fraction'>46/227</span>
+      </div>
+    </div>
+  </div>
+  <div class='status-line low'></div>
+<pre><table class="coverage">
+<tr><td class="line-count quiet">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70
+71
+72
+73
+74
+75
+76
+77
+78
+79
+80
+81
+82
+83
+84
+85
+86
+87
+88
+89
+90
+91
+92
+93
+94
+95
+96
+97
+98
+99
+100
+101
+102
+103
+104
+105
+106
+107
+108
+109
+110
+111
+112
+113
+114
+115
+116
+117
+118
+119
+120
+121
+122
+123
+124
+125
+126
+127
+128
+129
+130
+131
+132
+133
+134
+135
+136
+137
+138
+139
+140
+141
+142
+143
+144
+145
+146
+147
+148
+149
+150
+151
+152
+153
+154
+155
+156
+157
+158
+159
+160
+161
+162
+163
+164
+165
+166
+167
+168
+169
+170
+171
+172
+173
+174
+175
+176
+177
+178
+179
+180
+181
+182
+183
+184
+185
+186
+187
+188
+189
+190
+191
+192
+193
+194
+195
+196
+197
+198
+199
+200
+201
+202
+203
+204
+205
+206
+207
+208
+209
+210
+211
+212
+213
+214
+215
+216
+217
+218
+219
+220
+221
+222
+223
+224
+225
+226
+227
+228
+229
+230
+231
+232
+233
+234
+235
+236
+237
+238
+239
+240
+241
+242
+243
+244
+245
+246
+247
+248
+249
+250
+251
+252
+253
+254
+255
+256
+257
+258
+259
+260
+261
+262
+263
+264
+265
+266
+267
+268
+269
+270
+271
+272
+273
+274
+275
+276
+277
+278
+279
+280
+281
+282
+283
+284
+285
+286
+287
+288
+289
+290
+291
+292
+293
+294
+295
+296
+297
+298
+299
+300
+301
+302
+303
+304
+305
+306
+307
+308
+309
+310
+311
+312
+313
+314
+315
+316
+317
+318
+319
+320
+321
+322
+323
+324
+325
+326
+327
+328
+329
+330
+331
+332
+333
+334
+335
+336
+337
+338
+339
+340
+341
+342
+343
+344
+345
+346
+347
+348
+349
+350
+351
+352
+353
+354
+355
+356
+357
+358
+359
+360
+361
+362
+363
+364
+365
+366
+367
+368
+369
+370
+371
+372
+373
+374
+375
+376
+377
+378
+379
+380
+381
+382
+383
+384
+385
+386
+387
+388
+389
+390
+391
+392
+393
+394
+395
+396
+397
+398
+399
+400
+401
+402
+403
+404
+405
+406
+407
+408
+409
+410
+411
+412
+413
+414
+415
+416
+417
+418
+419
+420
+421
+422
+423
+424
+425
+426
+427
+428
+429
+430
+431
+432
+433
+434
+435
+436
+437
+438
+439
+440</td><td class="line-coverage quiet"><span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span></td><td class="text"><pre class="prettyprint lang-js">const bodyParser = require('body-parser')
+const mongoose = require('mongoose')
+const passport = require('passport')
+const cookieParser = require('cookie-parser')
+&nbsp;
+const LocalStrategy = require('passport-local').Strategy
+const Session = require('express-session')
+const User = require('./models/user')
+const Community = require('./models/community')
+const Unit = require('./models/unit')
+const Guest = require('./models/guest')
+const Request = require('./models/request')
+&nbsp;
+const app = require('express')()
+&nbsp;
+// Connect to database
+mongoose.Promise = global.Promise
+mongoose.connect('mongodb://localhost/hometurf')
+&nbsp;
+// Declare auth strategy
+passport.use('local', new LocalStrategy(
+<span class="fstat-no" title="function not covered" >    fu</span>nction(username, password, next) {
+<span class="cstat-no" title="statement not covered" >        User.findOne({username: username}, <span class="fstat-no" title="function not covered" >fu</span>nction(err, user) {</span>
+            // console.log(user)
+<span class="cstat-no" title="statement not covered" >            if (err) <span class="cstat-no" title="statement not covered" >return next(err)</span></span>
+<span class="cstat-no" title="statement not covered" >            if (!user) <span class="cstat-no" title="statement not covered" >return next(null, false) </span></span>// No user found with username
+<span class="cstat-no" title="statement not covered" >            user.verifyPassword(password, <span class="fstat-no" title="function not covered" >fu</span>nction (err, passwordMatch) {</span>
+<span class="cstat-no" title="statement not covered" >                if (err) <span class="cstat-no" title="statement not covered" >console.log(err)</span></span>
+<span class="cstat-no" title="statement not covered" >                if (passwordMatch) {</span>
+<span class="cstat-no" title="statement not covered" >                    return next(null, user) </span>// Success
+                }
+<span class="cstat-no" title="statement not covered" >                return next(null, false) </span>// Password did not match
+            })
+        })
+    }
+))
+&nbsp;
+passport.serializeUser(<span class="fstat-no" title="function not covered" >fu</span>nction(user, callback) {
+<span class="cstat-no" title="statement not covered" >    callback(null, user.id)</span>
+})
+&nbsp;
+passport.deserializeUser(<span class="fstat-no" title="function not covered" >fu</span>nction(id, callback) {
+<span class="cstat-no" title="statement not covered" >    User.findById(id, <span class="fstat-no" title="function not covered" >fu</span>nction (err, user) {</span>
+<span class="cstat-no" title="statement not covered" >        if (err) <span class="cstat-no" title="statement not covered" >return callback(err) </span></span>
+<span class="cstat-no" title="statement not covered" >        if (!user) <span class="cstat-no" title="statement not covered" >return callback(err, false)</span></span>
+<span class="cstat-no" title="statement not covered" >        return callback(null, user)</span>
+    })
+})
+&nbsp;
+app.use(cookieParser())
+app.use(bodyParser.json())
+app.use(Session({secret: 'fishing cats'}))
+app.use(passport.initialize())
+app.use(passport.session())
+&nbsp;
+/**
+ * Route Handlers
+ */
+&nbsp;
+// Login/Signup
+app.get('/login', getLogInPage)
+app.post('/login', passport.authenticate('local', {failureRedirect: '/login'}), logInUser)
+app.post('/signup', createNewUser)
+&nbsp;
+//Dashboard
+app.get('/dashboard', isLoggedIn, getDashboard)
+app.get('/guests', isLoggedIn, residentGetGuests)
+app.get('/requests', isLoggedIn, getRequests)
+app.post('/addGuest/:unitId', isLoggedIn, addGuest)
+app.post('/request/:requestId', isLoggedIn, handleRequest)
+&nbsp;
+// Onboarding
+app.get('/findCommunity', getCommunities)
+app.get('/findCommunity/:city', isLoggedIn, getCommunitiesByCity)
+app.get('/findSuperUnit/:communityId', isLoggedIn, getSuperUnits)
+app.get('/findUnit/:communityId/:superUnit', isLoggedIn, getUnits)
+app.post('/sendRequest/:unitId', isLoggedIn, sendNewResidentRequest)
+&nbsp;
+// Community Admin
+app.post('/community/:communityId', isLoggedIn, addUnitsToCommunity)
+app.post('/community', isLoggedIn, createCommunity)
+&nbsp;
+// Security Guard
+app.get('/security/guests/:communityId', isLoggedIn, securityGetGuests)
+app.post('/updateGuest/:guestId', isLoggedIn, updateGuest)
+app.post('/guestRequest/:unitId', isLoggedIn, sendNewGuestRequest)
+&nbsp;
+/**
+ * Callbacks
+ */
+&nbsp;
+// Login/Signup
+&nbsp;
+function <span class="fstat-no" title="function not covered" >getLogInPage(</span>req, res) {
+<span class="cstat-no" title="statement not covered" >    return res.json({message: "Please log in"})</span>
+}
+&nbsp;
+function <span class="fstat-no" title="function not covered" >logInUser(</span>req, res) {
+<span class="cstat-no" title="statement not covered" >    return res.redirect('/dashboard')</span>
+}
+&nbsp;
+function createNewUser(req, res) {
+&nbsp;
+    let user = new User(req.body)
+    
+    user.save(function(err, user) {
+        <span class="missing-if-branch" title="else path not taken" >E</span>if (err) return res.json(err)
+<span class="cstat-no" title="statement not covered" >        return res.json(user)</span>
+    })
+}
+&nbsp;
+// Dashboard
+&nbsp;
+function <span class="fstat-no" title="function not covered" >getDashboard(</span>req, res) {
+    let access = <span class="cstat-no" title="statement not covered" >req.user.access</span>
+    let userId = <span class="cstat-no" title="statement not covered" >req.user._id</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    Unit.find({residents: userId}, <span class="fstat-no" title="function not covered" >fu</span>nction(err, units) {</span>
+<span class="cstat-no" title="statement not covered" >        if (err) <span class="cstat-no" title="statement not covered" >return res.status(404)</span></span>
+<span class="cstat-no" title="statement not covered" >        if (!units) <span class="cstat-no" title="statement not covered" >return res.redirect('/communities')</span></span>
+<span class="cstat-no" title="statement not covered" >        return res.json(units)</span>
+    })
+}
+&nbsp;
+function <span class="fstat-no" title="function not covered" >residentGetGuests(</span>req, res) {
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    Unit.find({residents: req.user._id}, <span class="fstat-no" title="function not covered" >fu</span>nction(err, units) {</span>
+<span class="cstat-no" title="statement not covered" >        if (err) <span class="cstat-no" title="statement not covered" >return res.json(err)</span></span>
+<span class="cstat-no" title="statement not covered" >        if (!units) <span class="cstat-no" title="statement not covered" >return res.json({message: 'No Units found'})</span></span>
+&nbsp;
+        let allGuests = <span class="cstat-no" title="statement not covered" >[]</span>
+<span class="cstat-no" title="statement not covered" >        for (let i = 0; i &lt; units.length; i++) {</span>
+<span class="cstat-no" title="statement not covered" >            Guest.find({unit: units[i]._id}, <span class="fstat-no" title="function not covered" >fu</span>nction(err, guest) {</span>
+<span class="cstat-no" title="statement not covered" >                if (err) <span class="cstat-no" title="statement not covered" >return res.json(err)</span></span>
+<span class="cstat-no" title="statement not covered" >                if (!guest) <span class="cstat-no" title="statement not covered" >return res.json({message: 'No Guests'})</span></span>
+<span class="cstat-no" title="statement not covered" >                allGuests.push(guest)</span>
+            })
+        }
+<span class="cstat-no" title="statement not covered" >        return res.json(allGuests)</span>
+    })
+}
+&nbsp;
+function <span class="fstat-no" title="function not covered" >getRequests(</span>req, res) {
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    Request.find({to: req.user._id}, <span class="fstat-no" title="function not covered" >fu</span>nction(err, requests) {</span>
+<span class="cstat-no" title="statement not covered" >        if (err) <span class="cstat-no" title="statement not covered" >return res.json(err)</span></span>
+<span class="cstat-no" title="statement not covered" >        if (!requests) <span class="cstat-no" title="statement not covered" >return res.json({message: "You have no requests"})</span></span>
+<span class="cstat-no" title="statement not covered" >        return res.json(requests)</span>
+    })
+}
+&nbsp;
+function <span class="fstat-no" title="function not covered" >addGuest(</span>req, res) {
+    
+    let guest = <span class="cstat-no" title="statement not covered" >new Guest(req.body)</span>
+    
+<span class="cstat-no" title="statement not covered" >    if (req.user.access != 'security') {</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >        guest.unit = req.params.unitId</span>
+<span class="cstat-no" title="statement not covered" >        guest.approvedBy = req.user._id</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >        Unit.findOne({_id: guest.unit}, <span class="fstat-no" title="function not covered" >fu</span>nction(err, unit) {</span>
+<span class="cstat-no" title="statement not covered" >            if (err) <span class="cstat-no" title="statement not covered" >return res.json(err)</span></span>
+<span class="cstat-no" title="statement not covered" >            if (!unit) <span class="cstat-no" title="statement not covered" >return res.json({message: "No unit found"})</span></span>
+<span class="cstat-no" title="statement not covered" >            guest.community = unit.communityId</span>
+<span class="cstat-no" title="statement not covered" >            guest.save(<span class="fstat-no" title="function not covered" >fu</span>nction(err, guest) {</span>
+<span class="cstat-no" title="statement not covered" >                if (err) <span class="cstat-no" title="statement not covered" >return res.json(err)</span></span>
+<span class="cstat-no" title="statement not covered" >                return res.json(guest)</span>
+            })
+        })
+    }
+}
+&nbsp;
+function <span class="fstat-no" title="function not covered" >handleRequest(</span>req, res) {
+    
+    let requestId = <span class="cstat-no" title="statement not covered" >req.params.requestId</span>
+    let userToApprove = <span class="cstat-no" title="statement not covered" >''</span>
+    let unitId = <span class="cstat-no" title="statement not covered" >''</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    Request.findById(requestId, <span class="fstat-no" title="function not covered" >fu</span>nction(err, request) {</span>
+        
+<span class="cstat-no" title="statement not covered" >        userToApprove = request.from</span>
+<span class="cstat-no" title="statement not covered" >        unitId = request.unit</span>
+<span class="cstat-no" title="statement not covered" >        if (request.requestType == 'New Resident Request') {</span>
+<span class="cstat-no" title="statement not covered" >            if (req.body.approved == 'yes') {</span>
+<span class="cstat-no" title="statement not covered" >                Unit.findOneAndUpdate({_id: unitId}, {$push: {residents:userToApprove}}, <span class="fstat-no" title="function not covered" >fu</span>nction(err, unit) {</span>
+<span class="cstat-no" title="statement not covered" >                    if (err) <span class="cstat-no" title="statement not covered" >return next(err)</span></span>
+<span class="cstat-no" title="statement not covered" >                    request.remove(<span class="fstat-no" title="function not covered" >fu</span>nction(err, request) {</span>
+<span class="cstat-no" title="statement not covered" >                        return res.json(unit)</span>
+                    })
+                })
+            } else <span class="cstat-no" title="statement not covered" >if (req.body.approved == 'no') {</span>
+<span class="cstat-no" title="statement not covered" >                request.remove(<span class="fstat-no" title="function not covered" >fu</span>nction(err, request) {</span>
+<span class="cstat-no" title="statement not covered" >                    return res.json(unit)</span>
+                })
+            }
+        } else {
+&nbsp;
+            let guest = <span class="cstat-no" title="statement not covered" >new Guest()</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >            if (req.body.approved == 'yes') {</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >                if (req.user.access != 'security') {</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >                    guest.unit = req.params.unitId</span>
+<span class="cstat-no" title="statement not covered" >                    guest.approvedBy = req.user._id</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >                    Unit.findOne({_id: guest.unit}, <span class="fstat-no" title="function not covered" >fu</span>nction(err, unit) {</span>
+<span class="cstat-no" title="statement not covered" >                        if (err) <span class="cstat-no" title="statement not covered" >return res.json(err)</span></span>
+<span class="cstat-no" title="statement not covered" >                        if (!unit) <span class="cstat-no" title="statement not covered" >return res.json({message: "No unit found"})</span></span>
+<span class="cstat-no" title="statement not covered" >                        guest.community = unit.communityId</span>
+<span class="cstat-no" title="statement not covered" >                        guest.status = "Passed Gate"</span>
+<span class="cstat-no" title="statement not covered" >                        guest.save(<span class="fstat-no" title="function not covered" >fu</span>nction(err, guest) {</span>
+<span class="cstat-no" title="statement not covered" >                            if (err) <span class="cstat-no" title="statement not covered" >return res.json(err)</span></span>
+<span class="cstat-no" title="statement not covered" >                            request.remove(<span class="fstat-no" title="function not covered" >fu</span>nction(err, request) {</span>
+<span class="cstat-no" title="statement not covered" >                                return res.json(guest)</span>
+                            })
+                        })
+                    })
+                }
+            } else {
+<span class="cstat-no" title="statement not covered" >                request.remove(<span class="fstat-no" title="function not covered" >fu</span>nction(err, request) {</span>
+<span class="cstat-no" title="statement not covered" >                    return res.json({message: "Request removed"})</span>
+                })
+            }
+        }
+    })
+}
+&nbsp;
+// Onboarding
+&nbsp;
+function <span class="fstat-no" title="function not covered" >getCommunities(</span>req, res) {
+<span class="cstat-no" title="statement not covered" >    return res.json({message: "To begin your search, type the city in which you live."})</span>
+}
+&nbsp;
+function <span class="fstat-no" title="function not covered" >getCommunitiesByCity(</span>req, res) {
+&nbsp;
+    let city = <span class="cstat-no" title="statement not covered" >req.params.city</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    Community.find({city: city}, <span class="fstat-no" title="function not covered" >fu</span>nction(err, communities) {</span>
+<span class="cstat-no" title="statement not covered" >        if (err) <span class="cstat-no" title="statement not covered" >return res.json(err)</span></span>
+<span class="cstat-no" title="statement not covered" >        if (!communities) <span class="cstat-no" title="statement not covered" >return res.json({message: "No community in city"})</span></span>
+<span class="cstat-no" title="statement not covered" >        console.log(communities)</span>
+<span class="cstat-no" title="statement not covered" >        return res.json(communities)</span>
+    })
+}
+&nbsp;
+function <span class="fstat-no" title="function not covered" >getSuperUnits(</span>req, res) {
+<span class="cstat-no" title="statement not covered" >    Unit.find({communityId: req.params.communityId}).distinct('superUnit', <span class="fstat-no" title="function not covered" >fu</span>nction(err, superUnits) {</span>
+<span class="cstat-no" title="statement not covered" >        console.log(superUnits)</span>
+<span class="cstat-no" title="statement not covered" >        if (err) <span class="cstat-no" title="statement not covered" >return res.json(err)</span></span>
+<span class="cstat-no" title="statement not covered" >        if (!superUnits) <span class="cstat-no" title="statement not covered" >return res.json({message: "No super units found"})</span></span>
+<span class="cstat-no" title="statement not covered" >        return res.json(superUnits)</span>
+    })
+}
+&nbsp;
+function <span class="fstat-no" title="function not covered" >getUnits(</span>req, res) {
+<span class="cstat-no" title="statement not covered" >    Unit.find({communityId: req.params.communityId, superUnit: req.params.superUnit}, <span class="fstat-no" title="function not covered" >fu</span>nction(err, units) {</span>
+<span class="cstat-no" title="statement not covered" >        if (err) <span class="cstat-no" title="statement not covered" >return res.json(err)</span></span>
+<span class="cstat-no" title="statement not covered" >        if (!units) <span class="cstat-no" title="statement not covered" >return res.json({message: "No units found"})</span></span>
+<span class="cstat-no" title="statement not covered" >        return res.json(units)</span>
+    })
+}
+&nbsp;
+function <span class="fstat-no" title="function not covered" >sendNewResidentRequest(</span>req, res) {
+&nbsp;
+    let unitId = <span class="cstat-no" title="statement not covered" >req.params.unitId</span>
+    let unitName = <span class="cstat-no" title="statement not covered" >''</span>
+&nbsp;
+    let request = <span class="cstat-no" title="statement not covered" >new Request()</span>
+<span class="cstat-no" title="statement not covered" >    request.from = req.user._id</span>
+<span class="cstat-no" title="statement not covered" >    request.unit = unitId  </span>
+<span class="cstat-no" title="statement not covered" >    request.requestType = 'New Resident Request' </span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    Unit.findById(unitId, <span class="fstat-no" title="function not covered" >fu</span>nction(err, unit) {</span>
+<span class="cstat-no" title="statement not covered" >        if (err) <span class="cstat-no" title="statement not covered" >return res.json(err)</span></span>
+<span class="cstat-no" title="statement not covered" >        if (!unit) <span class="cstat-no" title="statement not covered" >return res.json({message: 'No unit found'})</span></span>
+<span class="cstat-no" title="statement not covered" >        unitName = unit.name + " " + unit.superUnit</span>
+<span class="cstat-no" title="statement not covered" >        request.message = req.user.username + " would like to be approved as a resident for " + unitName</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >        if (unit.residents.length === 0) {</span>
+&nbsp;
+            let adminId = <span class="cstat-no" title="statement not covered" >''</span>
+            let communityId = <span class="cstat-no" title="statement not covered" >unit.communityId</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >            Community.findById(communityId, <span class="fstat-no" title="function not covered" >fu</span>nction(err, community) {</span>
+<span class="cstat-no" title="statement not covered" >                adminId = community.adminId</span>
+<span class="cstat-no" title="statement not covered" >                request.to.push(adminId)</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >                request.save(<span class="fstat-no" title="function not covered" >fu</span>nction(err, request) {</span>
+<span class="cstat-no" title="statement not covered" >                    if (err) <span class="cstat-no" title="statement not covered" >return res.json(err)</span></span>
+<span class="cstat-no" title="statement not covered" >                    return res.json(request)</span>
+                })
+            })
+        } else {
+<span class="cstat-no" title="statement not covered" >            request.to = unit.residents</span>
+<span class="cstat-no" title="statement not covered" >            request.save(<span class="fstat-no" title="function not covered" >fu</span>nction(err, request) {</span>
+<span class="cstat-no" title="statement not covered" >                if (err) <span class="cstat-no" title="statement not covered" >return res.json(err)</span></span>
+<span class="cstat-no" title="statement not covered" >                return res.json(request)</span>
+            })
+        }
+    })
+}
+&nbsp;
+// Community Admin
+&nbsp;
+function <span class="fstat-no" title="function not covered" >createCommunity(</span>req, res) {
+&nbsp;
+    let userId = <span class="cstat-no" title="statement not covered" >req.user._id</span>
+    let userAccess = <span class="cstat-no" title="statement not covered" >req.user.access</span>
+<span class="cstat-no" title="statement not covered" >    req.body.adminId = userId</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    if (userAccess == "community-admin") {</span>
+&nbsp;
+        let community = <span class="cstat-no" title="statement not covered" >new Community()</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >        community.save(<span class="fstat-no" title="function not covered" >fu</span>nction(err, community) {</span>
+<span class="cstat-no" title="statement not covered" >            if (err) <span class="cstat-no" title="statement not covered" >return res.json(err)</span></span>
+<span class="cstat-no" title="statement not covered" >            return res.json(community)</span>
+        })  
+    }
+}
+&nbsp;
+function <span class="fstat-no" title="function not covered" >addUnitsToCommunity(</span>req, res) {
+    
+<span class="cstat-no" title="statement not covered" >    if (req.user.access == 'community-admin') {</span>
+        let listOfUnits = <span class="cstat-no" title="statement not covered" >req.body</span>
+        let resList = <span class="cstat-no" title="statement not covered" >new Array()</span>
+<span class="cstat-no" title="statement not covered" >        for (var i = 0; i &lt; listOfUnits.length; i++) {</span>
+&nbsp;
+            let newUnit = <span class="cstat-no" title="statement not covered" >new Unit(listOfUnits[i])</span>
+<span class="cstat-no" title="statement not covered" >            newUnit.communityId = req.params.cId                </span>
+            // console.log(newUnit)
+&nbsp;
+            // Tried newUnit.save() but kept getting "save is not a function"
+<span class="cstat-no" title="statement not covered" >            Unit.create(newUnit, <span class="fstat-no" title="function not covered" >fu</span>nction(err, unit) {</span>
+<span class="cstat-no" title="statement not covered" >                if (err) <span class="cstat-no" title="statement not covered" >return res.status(404)</span></span>
+<span class="cstat-no" title="statement not covered" >                if (!unit) <span class="cstat-no" title="statement not covered" >return res.status(404)</span></span>
+<span class="cstat-no" title="statement not covered" >                resList.push(unit)</span>
+            })
+        }  
+<span class="cstat-no" title="statement not covered" >        return res.json(resList)</span>
+    }
+}
+&nbsp;
+// Security
+&nbsp;
+function <span class="fstat-no" title="function not covered" >securityGetGuests(</span>req, res) {
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    if (req.user.access !== "security") {</span>
+<span class="cstat-no" title="statement not covered" >        return res.status(403)</span>
+    }
+&nbsp;
+    let communityId
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    Community.findOne({securityId: req.user._id}, <span class="fstat-no" title="function not covered" >fu</span>nction(err, community) {</span>
+<span class="cstat-no" title="statement not covered" >        if (err) <span class="cstat-no" title="statement not covered" >return res.json(err)</span></span>
+<span class="cstat-no" title="statement not covered" >        if (!community) <span class="cstat-no" title="statement not covered" >return res.json({message: "No community found"})</span></span>
+        
+<span class="cstat-no" title="statement not covered" >        communityId = community._id</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >            Guest.find({community: communityId}, <span class="fstat-no" title="function not covered" >fu</span>nction(err, guests) {</span>
+<span class="cstat-no" title="statement not covered" >            if (err) <span class="cstat-no" title="statement not covered" >return res.json(err)</span></span>
+<span class="cstat-no" title="statement not covered" >            if (!guests) <span class="cstat-no" title="statement not covered" >return res.json({message: "No guests found"})</span></span>
+<span class="cstat-no" title="statement not covered" >            return res.json(guests)</span>
+        })
+    })
+&nbsp;
+    
+}
+&nbsp;
+function <span class="fstat-no" title="function not covered" >updateGuest(</span>req, res) {
+    
+    let guestId = <span class="cstat-no" title="statement not covered" >req.params.guestId</span>
+    let issuerAccess = <span class="cstat-no" title="statement not covered" >req.user.access</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    Guest.findById(guestId, <span class="fstat-no" title="function not covered" >fu</span>nction(err, guest) {</span>
+        let status = <span class="cstat-no" title="statement not covered" >''</span>
+<span class="cstat-no" title="statement not covered" >        if (issuerAccess == "security") {</span>
+<span class="cstat-no" title="statement not covered" >            if (guest.status == 'In Transit') {</span>
+<span class="cstat-no" title="statement not covered" >                guest.update({status: 'Passed Gate'}, <span class="fstat-no" title="function not covered" >fu</span>nction(err, guest) {</span>
+<span class="cstat-no" title="statement not covered" >                    if (err) <span class="cstat-no" title="statement not covered" >return res.json(err)</span></span>
+<span class="cstat-no" title="statement not covered" >                    return res.json(guest)</span>
+                })
+            } else <span class="cstat-no" title="statement not covered" >if (guest.status == 'Confirmed') {</span>
+<span class="cstat-no" title="statement not covered" >                guest.update({status: 'Left Community'}, <span class="fstat-no" title="function not covered" >fu</span>nction(err, guest) {</span>
+<span class="cstat-no" title="statement not covered" >                    if (err) <span class="cstat-no" title="statement not covered" >return res.json(err)</span></span>
+<span class="cstat-no" title="statement not covered" >                    return res.json(guest)</span>
+                })
+            } 
+        } else {
+<span class="cstat-no" title="statement not covered" >            if (guest.status == "Passed Gate") {</span>
+<span class="cstat-no" title="statement not covered" >                guest.update({status: 'Confirmed'}, <span class="fstat-no" title="function not covered" >fu</span>nction(err, guest) {</span>
+<span class="cstat-no" title="statement not covered" >                    if (err) <span class="cstat-no" title="statement not covered" >return res.json(err)</span></span>
+<span class="cstat-no" title="statement not covered" >                    return res.json(guest)</span>
+                })
+            }
+        }
+    })
+}
+&nbsp;
+function <span class="fstat-no" title="function not covered" >sendNewGuestRequest(</span>req, res) {
+&nbsp;
+    let request = <span class="cstat-no" title="statement not covered" >new Request()</span>
+    let superUnit = <span class="cstat-no" title="statement not covered" >req.body.superUnit</span>
+    let unitId = <span class="cstat-no" title="statement not covered" >req.params.unitId</span>
+<span class="cstat-no" title="statement not covered" >    request.unit = unitId</span>
+<span class="cstat-no" title="statement not covered" >    request.from = req.user._id</span>
+<span class="cstat-no" title="statement not covered" >    request.requestType = "Guest Request"</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    Unit.findOne({_id: unitId}, <span class="fstat-no" title="function not covered" >fu</span>nction(err, unit) {</span>
+        
+<span class="cstat-no" title="statement not covered" >        if (err) <span class="cstat-no" title="statement not covered" >return res.json(err)</span></span>
+<span class="cstat-no" title="statement not covered" >        if (!unit) <span class="cstat-no" title="statement not covered" >return res.json({message: "No unit found"})</span></span>
+<span class="cstat-no" title="statement not covered" >        request.to = unit.residents</span>
+&nbsp;
+        let unitName = <span class="cstat-no" title="statement not covered" >unit.name + " " + unit.superUnit</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >        request.message = req.body.guestName + " is at the gate to visit " + unitName</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >        request.save(<span class="fstat-no" title="function not covered" >fu</span>nction(err, request) {</span>
+<span class="cstat-no" title="statement not covered" >            if (err) <span class="cstat-no" title="statement not covered" >return res.json(err)</span></span>
+<span class="cstat-no" title="statement not covered" >            return res.json(request)</span>
+        })
+    })
+}
+&nbsp;
+// Middleware
+&nbsp;
+function <span class="fstat-no" title="function not covered" >isLoggedIn(</span>req, res, next) {
+    // console.log("Current user: " + req.user.username)
+<span class="cstat-no" title="statement not covered" >    if (req.isAuthenticated()) <span class="cstat-no" title="statement not covered" >return next()</span></span>
+<span class="cstat-no" title="statement not covered" >    return res.redirect('/login')</span>
+}
+&nbsp;
+app.listen(3000, function(req, res) {
+  console.log('Server listening on port 3000')
+})
+&nbsp;
+&nbsp;
+module.exports = app</pre></td></tr>
+</table></pre>
+<div class='push'></div><!-- for sticky footer -->
+</div><!-- /wrapper -->
+<div class='footer quiet pad2 space-top1 center small'>
+  Code coverage
+  generated by <a href="http://istanbul-js.org/" target="_blank">istanbul</a> at Mon Mar 13 2017 19:09:31 GMT-0400 (AST)
+</div>
+</div>
+<script src="../prettify.js"></script>
+<script>
+window.onload = function () {
+        if (typeof prettyPrint === 'function') {
+            prettyPrint();
+        }
+};
+</script>
+<script src="../sorter.js"></script>
+</body>
+</html>

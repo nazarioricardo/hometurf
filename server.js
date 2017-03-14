@@ -82,7 +82,7 @@ app.post('/community', isLoggedIn, createCommunity)
 
 // Security Guard
 app.get('/security/guests/:communityId', isLoggedIn, securityGetGuests)
-app.post('/updateGuest/:guestId', isLoggedIn, updateGuest)
+app.put('/updateGuest/:guestId', isLoggedIn, updateGuest)
 app.post('/guestRequest/:unitId', isLoggedIn, sendNewGuestRequest)
 
 /**
@@ -104,7 +104,7 @@ function createNewUser(req, res) {
     let user = new User(req.body)
     
     user.save(function(err, user) {
-        if (err) return res.json(err)
+        if (err) return res.json(err).status(400)
         return res.json(user)
     })
 }
@@ -128,15 +128,14 @@ function residentGetGuests(req, res) {
         if (err) return res.json(err)
         if (!units) return res.json({message: 'No Units found'})
 
-        let allGuests = []
-        for (let i = 0; i < units.length; i++) {
-            Guest.find({unit: units[i]._id}, function(err, guest) {
-                if (err) return res.json(err)
-                if (!guest) return res.json({message: 'No Guests'})
-                allGuests.push(guest)
-            })
-        }
-        return res.json(allGuests)
+        console.log(units)
+        let unitIds = units.map(unit => unit._id)
+
+        Guest.find({unitId: {$in: unitIds}}, function(err, guests) {
+            if (err) return res.json(err)
+            if(!guests) return res.json({message: 'No Guests'})
+            return res.json(guests)
+        })
     })
 }
 
@@ -155,13 +154,13 @@ function addGuest(req, res) {
     
     if (req.user.access != 'security') {
 
-        guest.unit = req.params.unitId
+        guest.unitId = req.params.unitId
         guest.approvedBy = req.user._id
 
-        Unit.findOne({_id: guest.unit}, function(err, unit) {
+        Unit.findOne({_id: guest.unitId}, function(err, unit) {
             if (err) return res.json(err)
             if (!unit) return res.json({message: "No unit found"})
-            guest.community = unit.communityId
+            guest.communityId = unit.communityId
             guest.save(function(err, guest) {
                 if (err) return res.json(err)
                 return res.json(guest)
@@ -218,7 +217,7 @@ function handleRequest(req, res) {
                     })
                 }
             } else {
-                request.remove(function(err, request) {
+                    request.remove(function(err, request) {
                     return res.json({message: "Request removed"})
                 })
             }
@@ -307,11 +306,11 @@ function createCommunity(req, res) {
 
     let userId = req.user._id
     let userAccess = req.user.access
-    req.body.adminId = userId
 
     if (userAccess == "community-admin") {
 
-        let community = new Community()
+        let community = new Community(req.body)
+        community.adminId = userId
 
         community.save(function(err, community) {
             if (err) return res.json(err)
@@ -324,21 +323,18 @@ function addUnitsToCommunity(req, res) {
     
     if (req.user.access == 'community-admin') {
         let listOfUnits = req.body
-        let resList = new Array()
-        for (var i = 0; i < listOfUnits.length; i++) {
 
-            let newUnit = new Unit(listOfUnits[i])
-            newUnit.communityId = req.params.cId                
-            // console.log(newUnit)
+        listOfUnits.map(function(newUnit) {
 
-            // Tried newUnit.save() but kept getting "save is not a function"
-            Unit.create(newUnit, function(err, unit) {
-                if (err) return res.status(404)
-                if (!unit) return res.status(404)
-                resList.push(unit)
+            newUnit.communityId = req.params.communityId
+            let unit = new Unit(newUnit)
+
+            console.log(unit)
+            unit.save(function(err, unit) {
+                if (err) return res.json(err)
             })
-        }  
-        return res.json(resList)
+        })
+        return res.json(listOfUnits)
     }
 }
 
@@ -433,5 +429,8 @@ function isLoggedIn(req, res, next) {
 }
 
 app.listen(3000, function(req, res) {
-    console.log('Server listening on port 3000')
+  console.log('Server listening on port 3000')
 })
+
+
+module.exports = app

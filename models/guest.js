@@ -6,12 +6,12 @@ const guestSchema = mongoose.Schema({
         required: true
     },
 
-    community: {
+    communityId: {
         type: String,
         required: true
     },
 
-    unit: {
+    unitId: {
         type: String,
         required: true
     },
