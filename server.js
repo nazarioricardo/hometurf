@@ -1,21 +1,38 @@
+const express = require('express')
 const bodyParser = require('body-parser')
+const handlebars = require('express-handlebars')
 const mongoose = require('mongoose')
 const passport = require('passport')
 const cookieParser = require('cookie-parser')
 
 const LocalStrategy = require('passport-local').Strategy
 const Session = require('express-session')
+
 const User = require('./models/user')
 const Community = require('./models/community')
 const Unit = require('./models/unit')
 const Guest = require('./models/guest')
 const Request = require('./models/request')
 
-const app = require('express')()
+const app = express()
 
 // Connect to database
 mongoose.Promise = global.Promise
 mongoose.connect('mongodb://localhost/hometurf')
+
+/**
+ * Handlebars
+ */
+
+
+// Configure static files
+app.use(express.static('public'))
+
+// Configure template engine for Server
+app.engine('handlebars', handlebars({
+    defaultLayout: 'main'
+}))
+app.set('view engine', 'handlebars')
 
 // Declare auth strategy
 passport.use('local', new LocalStrategy(
@@ -57,9 +74,20 @@ app.use(passport.session())
  * Route Handlers
  */
 
+// Landing
+app.get('/', function (req, res) {
+
+    if (req.user) {
+        return res.redirect('/dashboard')
+    } else {
+        return res.redirect('/signup')
+    }
+})
+
 // Login/Signup
 app.get('/login', getLogInPage)
 app.post('/login', passport.authenticate('local', {failureRedirect: '/login'}), logInUser)
+app.get('/signup', getSignUpPage)
 app.post('/signup', createNewUser)
 
 //Dashboard
@@ -92,11 +120,15 @@ app.post('/guestRequest/:unitId', isLoggedIn, sendNewGuestRequest)
 // Login/Signup
 
 function getLogInPage(req, res) {
-    return res.json({message: "Please log in"})
+    return res.render('login')
 }
 
 function logInUser(req, res) {
     return res.redirect('/dashboard')
+}
+
+function getSignUpPage(req, res) {
+    return res.render('signup')
 }
 
 function createNewUser(req, res) {
@@ -420,8 +452,6 @@ function sendNewGuestRequest(req, res) {
     })
 }
 
-// Middleware
-
 function isLoggedIn(req, res, next) {
     // console.log("Current user: " + req.user.username)
     if (req.isAuthenticated()) return next()
@@ -431,6 +461,5 @@ function isLoggedIn(req, res, next) {
 app.listen(3000, function(req, res) {
   console.log('Server listening on port 3000')
 })
-
 
 module.exports = app
