@@ -86,9 +86,9 @@ app.get('/', function (req, res) {
 
 // Login/Signup
 app.get('/login', getLogInPage)
-app.post('/login', passport.authenticate('local', {failureRedirect: '/login'}), logInUser)
+app.post('/login',bodyParser.urlencoded({extended: false}), passport.authenticate('local', {failureRedirect: '/login'}), logInUser)
 app.get('/signup', getSignUpPage)
-app.post('/signup', createNewUser)
+app.post('/signup', bodyParser.urlencoded({extended: false}), createNewUser)
 
 //Dashboard
 app.get('/dashboard', isLoggedIn, getDashboard)
@@ -148,9 +148,21 @@ function getDashboard(req, res) {
     let userId = req.user._id
 
     Unit.find({residents: userId}, function(err, units) {
-        if (err) return res.status(404)
-        if (!units) return res.redirect('/communities')
-        return res.json(units)
+        if (err) return res.status(400)
+        if (units.length === 0) return res.redirect('/findCommunity')
+
+        console.log(units)
+        let unitIds = units.map(unit => unit._id)
+
+        Request.find({to: userId}, function(err, requests) {
+            if (err) return res.json(err)
+            
+            Guest.find({unitId: {$in: unitIds}}, function(err, guests) {
+                if (err) return res.json(err)
+                if(!guests) return res.render('dashboard', {units: units, guests: [{name:'No Guests'}]})
+                return res.render('dashboard', {units: units, guests: guests})
+            })
+        })
     })
 }
 
@@ -260,7 +272,7 @@ function handleRequest(req, res) {
 // Onboarding
 
 function getCommunities(req, res) {
-    return res.json({message: "To begin your search, type the city in which you live."})
+    return res.render('onboarding')
 }
 
 function getCommunitiesByCity(req, res) {
