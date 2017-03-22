@@ -149,7 +149,7 @@ function getDashboard(req, res) {
 
     Unit.find({residents: userId}, function(err, units) {
         if (err) return res.status(400)
-        if (units.length === 0) return res.redirect('/findCommunity')
+        if (units.length === 0 && req.user.access === 'resident') return res.redirect('/findCommunity')
 
         let unitIds = units.map(unit => unit._id)
 
@@ -159,7 +159,7 @@ function getDashboard(req, res) {
             Guest.find({unitId: {$in: unitIds}}, function(err, guests) {
                 if (err) return res.status(400)
                 if(!guests) return res.render('dashboard', {units: units, guests: [{name:'No Guests'}]})
-                return res.render('dashboard', {units: units, guests: guests})
+                return res.render('dashboard', {units: units, guests: guests, requests: requests})
             })
         })
     })
@@ -231,9 +231,9 @@ function handleRequest(req, res) {
                         return res.json(unit)
                     })
                 })
-            } else if (req.body.approved == 'no') {
+            } else {
                 request.remove(function(err, request) {
-                    return res.json(unit)
+                    return res.json(request)
                 })
             }
         } else {
@@ -275,6 +275,7 @@ function getCities(req, res) {
 
     Community.find({}).distinct('city', function(err, cities) {
         if (err) return res.status(400)
+        cities.sort()
         return res.render('cities', {cities: cities})
     })
 }
@@ -286,24 +287,27 @@ function getCommunitiesByCity(req, res) {
     Community.find({city: city}, function(err, communities) {
         if (err) return res.json(err)
         if (!communities) return res.json({message: "No community in city"})
+        communities.sort()
         return res.render('communities', {communities: communities})
     })
 }
 
 function getSuperUnits(req, res) {
-    Unit.find({communityId: req.params.communityId}).distinct('superUnit', function(err, superUnits) {
-        console.log(superUnits)
-        if (err) return res.json(err)
-        if (!superUnits) return res.json({message: "No super units found"})
-        return res.json(superUnits)
+    let communityId = req.params.communityId
+    Unit.find({communityId: communityId}).distinct('superUnit', function(err, superUnits) {
+        if (err) return res.status(400)
+        superUnits.sort()
+        return res.render('superUnits', {superUnits: superUnits, communityId: communityId})
     })
 }
 
 function getUnits(req, res) {
-    Unit.find({communityId: req.params.communityId, superUnit: req.params.superUnit}, function(err, units) {
-        if (err) return res.json(err)
-        if (!units) return res.json({message: "No units found"})
-        return res.json(units)
+    let communityId = req.params.communityId
+    let superUnit = req.params.superUnit
+    Unit.find({communityId: communityId, superUnit: superUnit}, function(err, units) {
+        if (err) return res.status(400)
+        units.sort()
+        return res.render('units', {units: units})
     })
 }
 

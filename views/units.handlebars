@@ -1,0 +1,9 @@
+<div id="onboarding">
+    <ul>
+    {{#each units}}
+        <form action="/sendRequest/{{_id}}" method="POST">
+            <li><button>{{name}}</button></li>
+        </form>
+    {{/each}}
+    </ul>
+</div>

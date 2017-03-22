@@ -13,10 +13,17 @@
     <h3>Requests</h3>
     <ul>
         {{#each requests}}
-            <li>{{message}}</li>
+            <li>{{message}} 
+                <form action="/request/{{_id}}" method="POST">
+                    <input type="radio" name="approved" value="yes">Yes
+                    <input type="radio" name="approved" value="no">No
+                    <button type="submit" name="approved">Okay</button>
+                </form>
+            </li>
         {{/each}}
     </ul>
 </div>
+
 <div id="units">
     <h3>Your Units</h3>
     <ul>
