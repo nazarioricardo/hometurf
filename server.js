@@ -24,7 +24,6 @@ mongoose.connect('mongodb://localhost/hometurf')
  * Handlebars
  */
 
-
 // Configure static files
 app.use(express.static('public'))
 
@@ -66,6 +65,7 @@ passport.deserializeUser(function(id, callback) {
 
 app.use(cookieParser())
 app.use(bodyParser.json())
+app.use(bodyParser.urlencoded({extended: false}))
 app.use(Session({secret: 'fishing cats'}))
 app.use(passport.initialize())
 app.use(passport.session())
@@ -86,19 +86,19 @@ app.get('/', function (req, res) {
 
 // Login/Signup
 app.get('/login', getLogInPage)
-app.post('/login',bodyParser.urlencoded({extended: false}), passport.authenticate('local', {failureRedirect: '/login'}), logInUser)
+app.post('/login', passport.authenticate('local', {failureRedirect: '/login'}), logInUser)
 app.get('/signup', getSignUpPage)
-app.post('/signup', bodyParser.urlencoded({extended: false}), createNewUser)
+app.post('/signup', createNewUser)
 
 //Dashboard
 app.get('/dashboard', isLoggedIn, getDashboard)
 app.get('/guests', isLoggedIn, residentGetGuests)
 app.get('/requests', isLoggedIn, getRequests)
-app.post('/addGuest/:unitId', isLoggedIn, addGuest)
+app.post('/addguest/:unitId', isLoggedIn, addGuest)
 app.post('/request/:requestId', isLoggedIn, handleRequest)
 
 // Onboarding
-app.get('/findCommunity', getCommunities)
+app.get('/findCommunity', getCities)
 app.get('/findCommunity/:city', isLoggedIn, getCommunitiesByCity)
 app.get('/findSuperUnit/:communityId', isLoggedIn, getSuperUnits)
 app.get('/findUnit/:communityId/:superUnit', isLoggedIn, getUnits)
@@ -151,14 +151,13 @@ function getDashboard(req, res) {
         if (err) return res.status(400)
         if (units.length === 0) return res.redirect('/findCommunity')
 
-        console.log(units)
         let unitIds = units.map(unit => unit._id)
 
         Request.find({to: userId}, function(err, requests) {
-            if (err) return res.json(err)
+            if (err) return res.status(400)
             
             Guest.find({unitId: {$in: unitIds}}, function(err, guests) {
-                if (err) return res.json(err)
+                if (err) return res.status(400)
                 if(!guests) return res.render('dashboard', {units: units, guests: [{name:'No Guests'}]})
                 return res.render('dashboard', {units: units, guests: guests})
             })
@@ -194,7 +193,8 @@ function getRequests(req, res) {
 
 function addGuest(req, res) {
     
-    let guest = new Guest(req.body)
+    let guest = new Guest()
+    guest.name = req.body.name
     
     if (req.user.access != 'security') {
 
@@ -207,7 +207,7 @@ function addGuest(req, res) {
             guest.communityId = unit.communityId
             guest.save(function(err, guest) {
                 if (err) return res.json(err)
-                return res.json(guest)
+                return res.status(201)
             })
         })
     }
@@ -271,8 +271,12 @@ function handleRequest(req, res) {
 
 // Onboarding
 
-function getCommunities(req, res) {
-    return res.render('onboarding')
+function getCities(req, res) {
+
+    Community.find({}).distinct('city', function(err, cities) {
+        if (err) return res.status(400)
+        return res.render('cities', {cities: cities})
+    })
 }
 
 function getCommunitiesByCity(req, res) {
@@ -282,8 +286,7 @@ function getCommunitiesByCity(req, res) {
     Community.find({city: city}, function(err, communities) {
         if (err) return res.json(err)
         if (!communities) return res.json({message: "No community in city"})
-        console.log(communities)
-        return res.json(communities)
+        return res.render('communities', {communities: communities})
     })
 }
 

@@ -3,17 +3,29 @@
     <ul>
     {{#each guests}}
         <li>{{name}}</li>
+        <form>
+            <button type="submit">Confirm Arrival</button>
+        </form>
     {{/each}}
     </ul>
 </div>
 <div id="requests">
     <h3>Requests</h3>
+    <ul>
+        {{#each requests}}
+            <li>{{message}}</li>
+        {{/each}}
+    </ul>
 </div>
 <div id="units">
     <h3>Your Units</h3>
     <ul>
-    {{#each units}}
+        {{#each units}}
         <li>{{name}} {{superUnit}}</li>
-    {{/each}}
+        <form action="/addguest/{{_id}}" method="POST">
+            <input id="guestName" name="name" placeholder="Guest's Name">
+            <button type="submit">Add Guest</button>
+        </form>
+        {{/each}}
     </ul>
 </div>
