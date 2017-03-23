@@ -80,7 +80,7 @@ app.get('/', function (req, res) {
     if (req.user) {
         return res.redirect('/dashboard')
     } else {
-        return res.redirect('/signup')
+        return res.redirect('/login')
     }
 })
 
