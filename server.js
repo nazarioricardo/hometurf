@@ -78,7 +78,12 @@ app.use(passport.session())
 app.get('/', function (req, res) {
 
     if (req.user) {
-        return res.redirect('/dashboard')
+        console.log(req.user.access)
+        if (req.user.access === 'security') {  
+            return res.redirect('/security-dashboard')
+        } else {
+            return res.redirect('/dashboard')
+        }
     } else {
         return res.redirect('/login')
     }
@@ -109,7 +114,7 @@ app.post('/community/:communityId', isLoggedIn, addUnitsToCommunity)
 app.post('/community', isLoggedIn, createCommunity)
 
 // Security Guard
-app.get('/security/guests/:communityId', isLoggedIn, securityGetGuests)
+app.get('/security-dashboard', isLoggedIn, getSecurityDashbaoard)
 app.put('/updateGuest/:guestId', isLoggedIn, updateGuest)
 app.post('/guestRequest/:unitId', isLoggedIn, sendNewGuestRequest)
 
@@ -124,7 +129,11 @@ function getLogInPage(req, res) {
 }
 
 function logInUser(req, res) {
-    return res.redirect('/dashboard')
+    if (req.user.access === 'security') {  
+        return res.redirect('/security-dashboard')
+    } else {
+        return res.redirect('/dashboard')
+    }
 }
 
 function getSignUpPage(req, res) {
@@ -147,6 +156,10 @@ function getDashboard(req, res) {
     let access = req.user.access
     let userId = req.user._id
 
+    if (access === 'security') {
+        return res.status(403)
+    }
+
     Unit.find({residents: userId}, function(err, units) {
         if (err) return res.status(400)
         if (units.length === 0 && req.user.access === 'resident') return res.redirect('/findCommunity')
@@ -158,7 +171,7 @@ function getDashboard(req, res) {
             
             Guest.find({unitId: {$in: unitIds}}, function(err, guests) {
                 if (err) return res.status(400)
-                if(!guests) return res.render('dashboard', {units: units, guests: [{name:'No Guests'}]})
+                if(guests.length === 0) return res.render('dashboard', {units: units, guests: [{name:'No Guests'}]})
                 return res.render('dashboard', {units: units, guests: guests, requests: requests})
             })
         })
@@ -391,28 +404,23 @@ function addUnitsToCommunity(req, res) {
 
 // Security
 
-function securityGetGuests(req, res) {
+function getSecurityDashbaoard(req, res) {
 
     if (req.user.access !== "security") {
         return res.status(403)
     }
 
-    let communityId
-
     Community.findOne({securityId: req.user._id}, function(err, community) {
         if (err) return res.json(err)
         if (!community) return res.json({message: "No community found"})
         
-        communityId = community._id
-
-            Guest.find({community: communityId}, function(err, guests) {
+            Guest.find({communityId: community._id}, function(err, guests) {
             if (err) return res.json(err)
             if (!guests) return res.json({message: "No guests found"})
-            return res.json(guests)
+            console.log(guests)
+            return res.render('security-dashboard', {community: community.name, guests: guests})
         })
-    })
-
-    
+    })    
 }
 
 function updateGuest(req, res) {

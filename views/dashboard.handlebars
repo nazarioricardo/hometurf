@@ -2,10 +2,12 @@
     <h3>Guest List</h3>
     <ul>
     {{#each guests}}
-        <li>{{name}}</li>
+        <li>
+        {{name}} {{status}}
         <form>
             <button type="submit">Confirm Arrival</button>
         </form>
+        </li>
     {{/each}}
     </ul>
 </div>
@@ -28,11 +30,13 @@
     <h3>Your Units</h3>
     <ul>
         {{#each units}}
-        <li>{{name}} {{superUnit}}</li>
+        <li>
+        {{name}} {{superUnit}}
         <form action="/addguest/{{_id}}" method="POST">
             <input id="guestName" name="name" placeholder="Guest's Name">
             <button type="submit">Add Guest</button>
         </form>
+        </li>
         {{/each}}
     </ul>
 </div>
