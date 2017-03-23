@@ -1,42 +1,71 @@
-<div id="guests">
-    <h3>Guest List</h3>
-    <ul>
-    {{#each guests}}
-        <li>
-        {{name}} {{status}}
-        <form>
-            <button type="submit">Confirm Arrival</button>
-        </form>
-        </li>
-    {{/each}}
-    </ul>
-</div>
-<div id="requests">
-    <h3>Requests</h3>
-    <ul>
-        {{#each requests}}
-            <li>{{message}} 
-                <form action="/request/{{_id}}" method="POST">
-                    <input type="radio" name="approved" value="yes">Yes
-                    <input type="radio" name="approved" value="no">No
-                    <button type="submit" name="approved">Okay</button>
-                </form>
-            </li>
-        {{/each}}
-    </ul>
-</div>
+<div class="page" id="dashboard">
+    <div class="feeds container">
+        
+        <div class="feed col-md-4" id="guests">
+            <div class="panel panel-default">
+            <div class="panel-heading">
+                <h3 class="panel-title">Guests</h3>
+            </div>
+            <div class="panel-body">
+                <ul class="feed-list">
+                {{#each guests}}
+                    <li class="well">
+                    <form>
+                        <label class="form-group">{{name}}</label><br> 
+                        <label class="form-group">{{status}}</label>
 
-<div id="units">
-    <h3>Your Units</h3>
-    <ul>
-        {{#each units}}
-        <li>
-        {{name}} {{superUnit}}
-        <form action="/addguest/{{_id}}" method="POST">
-            <input id="guestName" name="name" placeholder="Guest's Name">
-            <button type="submit">Add Guest</button>
-        </form>
-        </li>
-        {{/each}}
-    </ul>
+                        <button class="form-control form-group btn-primary"  type="submit">Confirm Arrival</button>
+                    </form>
+                    </li>
+                {{/each}}
+                </ul>
+            </div>
+            </div>   
+        </div>
+
+        <div class="feed col-md-4" id="requests">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h3 class="panel-title">Requests</h3>
+                </div>
+                <div class="panel-body">
+                    <ul class="feed-list">
+                        {{#each requests}}
+                        <li class="well">
+                        <label class="form-group">{{message}}</label>
+                            <form action="/request/{{_id}}" method="POST">
+                                <input class="form-control form-group" type="radio" name="approved" value="yes">Yes
+                                <input class="form-control form-group" type="radio" name="approved" value="no">No
+                                <button class="form-control form-group btn-primary" type="submit" name="approved">Okay</button>
+                            </form>
+                        </li>
+                        {{/each}}
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="feed col-md-4" id="units">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h3 class="panel-title">Units</h3>
+                </div>
+                <div class="panel-body">
+                    <ul class="feed-list">
+                        {{#each units}}
+                        <li class="well">
+    
+                        <form action="/addguest/{{_id}}" method="POST">
+                            <label class="form-group">{{name}}</label>
+                            <label class="form-group">{{superUnit}}</label>
+                            <input class="form-control form-group" id="guestName" name="name" placeholder="New Guest's Name">
+                            <button class="form-control form-group btn-primary" type="submit">Add Guest</button>
+                        </form>
+                        </li>
+                        {{/each}}
+                    </ul>
+                </div>
+            </div> 
+        </div>
+    </div>
 </div>

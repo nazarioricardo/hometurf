@@ -1,0 +1,27 @@
+<div id="landing-page">
+    <div class="jumbotron">
+        <div class="container">
+            <h1>Hometurf</h1>
+            <h3>A resident-to-security interfacing solution for access controlled communities</h3>
+            <h4><a href="/findCommunity">Check if your community is registered with us</a></h4>
+            <div id="login">
+                <form class="form-inline" action="/login" method="POST">
+                    <input class="form-control form-group" id="username" type="username" name="username" placeholder="Username">
+                    <input class="form-control form-group" id="password" type="password" name="password" placeholder="Password">
+                    <button class="form-control form-group btn-primary" type="submit">Log In</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="container">
+        <div class="col-md-4" id="signup">
+            <form action="/signup" method="POST">
+                <legend>Register</legend>
+                <input class="form-control form-group" id="username" type="username" name="username" placeholder="Username">
+                <input class="form-control form-group" id="password" type="password" name="password" placeholder="Password">
+                <input class="form-control form-group" id="confirm-password" type="password" name="confirm-password" placeholder="Confirm Password">
+                <button class="form-control form-group btn-primary" type="submit">Create Account</button>
+            </form>
+        </div>
+    </div>
+</div>

@@ -94,6 +94,7 @@ app.get('/login', getLogInPage)
 app.post('/login', passport.authenticate('local', {failureRedirect: '/login'}), logInUser)
 app.get('/signup', getSignUpPage)
 app.post('/signup', createNewUser)
+app.get('/logout', logOut)
 
 //Dashboard
 app.get('/dashboard', isLoggedIn, getDashboard)
@@ -104,7 +105,7 @@ app.post('/request/:requestId', isLoggedIn, handleRequest)
 
 // Onboarding
 app.get('/findCommunity', getCities)
-app.get('/findCommunity/:city', isLoggedIn, getCommunitiesByCity)
+app.get('/findCommunity/:city', getCommunitiesByCity)
 app.get('/findSuperUnit/:communityId', isLoggedIn, getSuperUnits)
 app.get('/findUnit/:communityId/:superUnit', isLoggedIn, getUnits)
 app.post('/sendRequest/:unitId', isLoggedIn, sendNewResidentRequest)
@@ -125,7 +126,7 @@ app.post('/guestRequest/:unitId', isLoggedIn, sendNewGuestRequest)
 // Login/Signup
 
 function getLogInPage(req, res) {
-    return res.render('login')
+    return res.render('landing', {title: 'Hometurf'})
 }
 
 function logInUser(req, res) {
@@ -171,8 +172,21 @@ function getDashboard(req, res) {
             
             Guest.find({unitId: {$in: unitIds}}, function(err, guests) {
                 if (err) return res.status(400)
-                if(guests.length === 0) return res.render('dashboard', {units: units, guests: [{name:'No Guests'}]})
-                return res.render('dashboard', {units: units, guests: guests, requests: requests})
+                if(guests.length === 0) return res.render('dashboard', {
+                    title: req.user.username,
+                    units: units, 
+                    requests: requests,
+                    navRight: "logout",
+                    navRightText: "Log Out"
+                })
+                return res.render('dashboard', {
+                    title: req.user.username, 
+                    units: units, 
+                    guests: guests,
+                    requests: requests,
+                    navRight: "logout",
+                    navRightText: "Log Out"
+                })
             })
         })
     })
@@ -220,7 +234,7 @@ function addGuest(req, res) {
             guest.communityId = unit.communityId
             guest.save(function(err, guest) {
                 if (err) return res.json(err)
-                return res.status(201)
+                return res.status(201).redirect('/dashboard')
             })
         })
     }
@@ -282,6 +296,12 @@ function handleRequest(req, res) {
     })
 }
 
+function logOut(req, res) {
+    req.session.destroy(function (err) {
+    res.redirect('/') //Inside a callback… bulletproof!
+  })
+}
+
 // Onboarding
 
 function getCities(req, res) {
@@ -310,7 +330,15 @@ function getSuperUnits(req, res) {
     Unit.find({communityId: communityId}).distinct('superUnit', function(err, superUnits) {
         if (err) return res.status(400)
         superUnits.sort()
-        return res.render('superUnits', {superUnits: superUnits, communityId: communityId})
+
+        Community.find({_id: communityId}, function(err, community) {
+            if (err) return res.status(400)
+
+            return res.render('superUnits', {
+                superUnits: superUnits, 
+                communityId: communityId,
+                superUnitType: community.superUnitType                })
+        }) 
     })
 }
 
@@ -418,7 +446,13 @@ function getSecurityDashbaoard(req, res) {
             if (err) return res.json(err)
             if (!guests) return res.json({message: "No guests found"})
             console.log(guests)
-            return res.render('security-dashboard', {community: community.name, guests: guests})
+            return res.render('security-dashboard', {
+                title: 'Security ' + req.user.username,
+                community: community.name, 
+                guests: guests,
+                navRight: "logout",
+                navRightText: "Log Out"
+            })
         })
     })    
 }

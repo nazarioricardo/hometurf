@@ -1,12 +1,24 @@
-<div id="security-dashboard">
-    <h1>{{community}}</h1>
-    <div id="guest-list">
-        <ul>
-        {{#each guests}}
-            <li>
-            {{name}} {{status}}
-            </li>
-        {{/each}}  
-        </ul>
+<div class="page" id="dashboard">
+
+<h2>{{community}}</h2>
+
+    <div id="guests">
+        <div class="panel panel-default">
+        <div class="panel-heading">
+            <h3 class="panel-title">Guests</h3>
+        </div>
+        <div class="panel-body">
+            <ul>
+            {{#each guests}}
+                <li>
+                {{name}} {{status}}
+                <form>
+                    <button type="submit">Confirm Arrival</button>
+                </form>
+                </li>
+            {{/each}}
+            </ul>
+        </div>
+        </div>   
     </div>
 </div>

@@ -1,0 +1,25 @@
+.page {
+    margin: 80px 20px 20px 20px;
+}
+
+.feed-list {
+    padding: 0;
+    list-style: none;
+}
+
+.feeds {
+    display: inline-block
+}
+
+.panel {
+    min-height: 500px;
+}
+
+.well {
+    padding-top: 10px;
+    padding-bottom: 10px;
+}
+
+/*.btn-primary {
+    background-color: #00BD00;
+}*/

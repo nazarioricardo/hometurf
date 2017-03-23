@@ -28,6 +28,12 @@ const communitySchema = mongoose.Schema({
         unique: true
     },
 
+    superUnitType: {
+        type: String,
+        required: true,
+        enum: ['street', 'floor']
+    },
+
     city: {
         type: String,
         required: true

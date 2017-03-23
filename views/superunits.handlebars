@@ -1,4 +1,9 @@
-<div id="onboarding">
+<div class="page" id="onboarding">
+    <div class="jumbotron">
+        <div class="container">
+            <h1>Select your {{superUnitType}}</h1>
+        </div>
+    </div>
     <ul>
     {{#each superUnits as |superUnit|}}
         <a href="/findUnit/{{../communityId}}/{{superUnit}}"><li>{{superUnit}}</li></a>
