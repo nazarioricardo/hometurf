@@ -23,7 +23,7 @@ const guestSchema = mongoose.Schema({
     status: {
         type: String,
         required: true,
-        enum: ["In Transit", "Passed Gate", "Confirmed", "Left Community"],
+        enum: ["In Transit", "Passed Gate"],
         default: "In Transit"
     },
 

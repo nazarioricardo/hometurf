@@ -117,7 +117,7 @@ app.post('/community', isLoggedIn, createCommunity)
 
 // Security Guard
 app.get('/security-dashboard', isLoggedIn, getSecurityDashbaoard)
-app.put('/updateGuest/:guestId', isLoggedIn, updateGuest)
+app.post('/updateGuest/:guestId', isLoggedIn, updateGuest)
 app.post('/guestRequest/:unitId', isLoggedIn, sendNewGuestRequest)
 
 /**
@@ -489,25 +489,66 @@ function updateGuest(req, res) {
 
     Guest.findById(guestId, function(err, guest) {
         let status = ''
-        if (issuerAccess == "security") {
-            if (guest.status == 'In Transit') {
-                guest.update({status: 'Passed Gate'}, function(err, guest) {
-                    if (err) return res.json(err)
-                    return res.json(guest)
+
+        if (issuerAccess === "resident") {
+
+            guest.remove(function(err) {
+                if (err) return res.status(400)
+
+                Unit.find({residents: req.user._id}, function(err, units) {
+
+                    let unitIds = units.map(unit => unit._id)
+
+                    Request.find({to: req.user._id}, function(err, requests) {
+                        if (err) return res.status(400)
+                        
+                        Guest.find({unitId: {$in: unitIds}}, function(err, guests) {
+                            if (err) return res.status(400)
+                            if(guests.length === 0) return res.render('dashboard', {
+                                title: req.user.username,
+                                units: units, 
+                                requests: requests,
+                                navRight: "logout",
+                                navRightText: "Log Out"
+                            })
+                            return res.render('dashboard', {
+                                title: req.user.username, 
+                                units: units, 
+                                guests: guests,
+                                requests: requests,
+                                navRight: "logout",
+                                navRightText: "Log Out"
+                            })
+                        })
+                    })
                 })
-            } else if (guest.status == 'Confirmed') {
-                guest.update({status: 'Left Community'}, function(err, guest) {
-                    if (err) return res.json(err)
-                    return res.json(guest)
-                })
-            } 
+            })
         } else {
-            if (guest.status == "Passed Gate") {
-                guest.update({status: 'Confirmed'}, function(err, guest) {
-                    if (err) return res.json(err)
-                    return res.json(guest)
-                })
-            }
+
+            Community.findOne({securityId: req.user._id}, function(err, community) {
+                    if (guest.status === 'In Transit') {
+                    guest.update({status: 'Passed Gate'}, function(err, guest) {
+                        if (err) return res.json(err)
+                        Community.findOne({securityId: req.user._id}, function(err, community) {
+                            if (err) return res.json(err)
+                            if (!community) return res.json({ message: "No community found" })
+
+                            Guest.find({ communityId: community._id }, function (err, guests) {
+                                if (err) return res.json(err)
+                                if (!guests) return res.json({ message: "No guests found" })
+                                console.log(guests)
+                                return res.render('security-dashboard', {
+                                    title: 'Security ' + req.user.username,
+                                    community: community.name,
+                                    guests: guests,
+                                    navRight: "logout",
+                                    navRightText: "Log Out"
+                                })
+                            })
+                        })  
+                    }) 
+                }  
+            }) 
         }
     })
 }

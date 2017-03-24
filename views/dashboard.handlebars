@@ -10,7 +10,7 @@
                 <ul class="feed-list">
                 {{#each guests}}
                     <li class="well">
-                    <form>
+                    <form action="/updateGuest/{{_id}}" method="POST">
                         <label class="form-group">{{name}}</label><br> 
                         <label class="form-group">{{status}}</label>
 

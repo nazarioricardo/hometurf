@@ -1,3 +1,11 @@
+.jumbotron {
+    padding-top: 100px;
+    padding-bottom: 50px;
+}
+#login {
+    margin-top: 100px;
+}
+
 .page {
     margin: 80px 20px 20px 20px;
 }
