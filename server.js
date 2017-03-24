@@ -109,6 +109,7 @@ app.get('/findCommunity/:city', getCommunitiesByCity)
 app.get('/findSuperUnit/:communityId', isLoggedIn, getSuperUnits)
 app.get('/findUnit/:communityId/:superUnit', isLoggedIn, getUnits)
 app.post('/sendRequest/:unitId', isLoggedIn, sendNewResidentRequest)
+app.get('/standby', isLoggedIn, standby)
 
 // Community Admin
 app.post('/community/:communityId', isLoggedIn, addUnitsToCommunity)
@@ -130,11 +131,8 @@ function getLogInPage(req, res) {
 }
 
 function logInUser(req, res) {
-    if (req.user.access === 'security') {  
-        return res.redirect('/security-dashboard')
-    } else {
-        return res.redirect('/dashboard')
-    }
+    if (req.user.access === 'security') return res.redirect('/security-dashboard')
+    return res.redirect('/dashboard')
 }
 
 function getSignUpPage(req, res) {
@@ -147,7 +145,7 @@ function createNewUser(req, res) {
     
     user.save(function(err, user) {
         if (err) return res.json(err).status(400)
-        return res.json(user)
+        return res.redirect('/login')
     })
 }
 
@@ -157,38 +155,43 @@ function getDashboard(req, res) {
     let access = req.user.access
     let userId = req.user._id
 
-    if (access === 'security') {
-        return res.status(403)
-    }
+    if (access === 'security') return res.status(403)
 
     Unit.find({residents: userId}, function(err, units) {
         if (err) return res.status(400)
-        if (units.length === 0 && req.user.access === 'resident') return res.redirect('/findCommunity')
-
-        let unitIds = units.map(unit => unit._id)
-
-        Request.find({to: userId}, function(err, requests) {
-            if (err) return res.status(400)
-            
-            Guest.find({unitId: {$in: unitIds}}, function(err, guests) {
+        if (units.length === 0 && req.user.access === 'resident') {
+            Request.findOne({from: userId}, function(err, request) {
                 if (err) return res.status(400)
-                if(guests.length === 0) return res.render('dashboard', {
-                    title: req.user.username,
-                    units: units, 
-                    requests: requests,
-                    navRight: "logout",
-                    navRightText: "Log Out"
-                })
-                return res.render('dashboard', {
-                    title: req.user.username, 
-                    units: units, 
-                    guests: guests,
-                    requests: requests,
-                    navRight: "logout",
-                    navRightText: "Log Out"
+                console.log(request)
+                if (request != null) return res.redirect('/standby')
+                return res.redirect('/findCommunity')
+            })
+        } else {
+            let unitIds = units.map(unit => unit._id)
+
+            Request.find({to: userId}, function(err, requests) {
+                if (err) return res.status(400)
+                
+                Guest.find({unitId: {$in: unitIds}}, function(err, guests) {
+                    if (err) return res.status(400)
+                    if(guests.length === 0) return res.render('dashboard', {
+                        title: req.user.username,
+                        units: units, 
+                        requests: requests,
+                        navRight: "logout",
+                        navRightText: "Log Out"
+                    })
+                    return res.render('dashboard', {
+                        title: req.user.username, 
+                        units: units, 
+                        guests: guests,
+                        requests: requests,
+                        navRight: "logout",
+                        navRightText: "Log Out"
+                    })
                 })
             })
-        })
+        }
     })
 }
 
@@ -251,16 +254,16 @@ function handleRequest(req, res) {
         userToApprove = request.from
         unitId = request.unit
         if (request.requestType == 'New Resident Request') {
-            if (req.body.approved == 'yes') {
+            if (req.body.approved.includes('yes')) {
                 Unit.findOneAndUpdate({_id: unitId}, {$push: {residents:userToApprove}}, function(err, unit) {
                     if (err) return next(err)
                     request.remove(function(err, request) {
-                        return res.json(unit)
+                        return res.redirect('/dashboard')
                     })
                 })
             } else {
                 request.remove(function(err, request) {
-                    return res.json(request)
+                    return res.redirect('/dashboard')
                 })
             }
         } else {
@@ -309,7 +312,11 @@ function getCities(req, res) {
     Community.find({}).distinct('city', function(err, cities) {
         if (err) return res.status(400)
         cities.sort()
-        return res.render('cities', {cities: cities})
+        return res.render('cities', {
+            cities: cities,
+            navRight: "logout",
+            navRightText: "Log Out"
+        })
     })
 }
 
@@ -321,7 +328,11 @@ function getCommunitiesByCity(req, res) {
         if (err) return res.json(err)
         if (!communities) return res.json({message: "No community in city"})
         communities.sort()
-        return res.render('communities', {communities: communities})
+        return res.render('communities', {
+            communities: communities,
+            navRight: "logout",
+            navRightText: "Log Out"
+        })
     })
 }
 
@@ -337,7 +348,10 @@ function getSuperUnits(req, res) {
             return res.render('superUnits', {
                 superUnits: superUnits, 
                 communityId: communityId,
-                superUnitType: community.superUnitType                })
+                superUnitType: community.superUnitType,
+                navRight: "logout",
+                navRightText: "Log Out"
+            })
         }) 
     })
 }
@@ -348,7 +362,11 @@ function getUnits(req, res) {
     Unit.find({communityId: communityId, superUnit: superUnit}, function(err, units) {
         if (err) return res.status(400)
         units.sort()
-        return res.render('units', {units: units})
+        return res.render('units', {
+            units: units,
+            navRight: "logout",
+            navRightText: "Log Out" 
+        })
     })
 }
 
@@ -379,16 +397,23 @@ function sendNewResidentRequest(req, res) {
 
                 request.save(function(err, request) {
                     if (err) return res.json(err)
-                    return res.json(request)
+                    return res.redirect('/standby')
                 })
             })
         } else {
             request.to = unit.residents
             request.save(function(err, request) {
                 if (err) return res.json(err)
-                return res.json(request)
+                return res.redirect('/standby')
             })
         }
+    })
+}
+
+function standby(req, res) {
+    return res.render('standby', {
+        navRight: "logout",
+        navRightText: "Log Out" 
     })
 }
 
