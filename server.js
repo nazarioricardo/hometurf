@@ -98,8 +98,6 @@ app.get('/logout', logOut)
 
 //Dashboard
 app.get('/dashboard', isLoggedIn, getDashboard)
-app.get('/guests', isLoggedIn, residentGetGuests)
-app.get('/requests', isLoggedIn, getRequests)
 app.post('/addguest/:unitId', isLoggedIn, addGuest)
 app.post('/request/:requestId', isLoggedIn, handleRequest)
 
@@ -154,71 +152,32 @@ function createNewUser(req, res) {
 function getDashboard(req, res) {
     let access = req.user.access
     let userId = req.user._id
+    let userUnits = []
+    let userReqs = []
+    let userGuests = []
 
     if (access === 'security') return res.status(403)
 
-    Unit.find({residents: userId}, function(err, units) {
+    getDataForDashboard(userId, function(err, units, requests, guests) {
         if (err) return res.status(400)
-        if (units.length === 0 && req.user.access === 'resident') {
+        
+        if(units.length === 0 && req.user.access === 'resident') {
             Request.findOne({from: userId}, function(err, request) {
                 if (err) return res.status(400)
-                console.log(request)
                 if (request != null) return res.redirect('/standby')
                 return res.redirect('/findCommunity')
             })
         } else {
-            let unitIds = units.map(unit => unit._id)
-
-            Request.find({to: userId}, function(err, requests) {
-                if (err) return res.status(400)
-                
-                Guest.find({unitId: {$in: unitIds}}, function(err, guests) {
-                    if (err) return res.status(400)
-                    if(guests.length === 0) return res.render('dashboard', {
-                        title: req.user.username,
-                        units: units, 
-                        requests: requests,
-                        navRight: "logout",
-                        navRightText: "Log Out"
-                    })
-                    return res.render('dashboard', {
-                        title: req.user.username, 
-                        units: units, 
-                        guests: guests,
-                        requests: requests,
-                        navRight: "logout",
-                        navRightText: "Log Out"
-                    })
-                })
+            return res.render('dashboard', {
+                title: req.user.username, 
+                units: units, 
+                guests: guests,
+                requests: requests,
+                navRight: "logout",
+                navRightText: "Log Out"
             })
         }
-    })
-}
-
-function residentGetGuests(req, res) {
-
-    Unit.find({residents: req.user._id}, function(err, units) {
-        if (err) return res.json(err)
-        if (!units) return res.json({message: 'No Units found'})
-
-        console.log(units)
-        let unitIds = units.map(unit => unit._id)
-
-        Guest.find({unitId: {$in: unitIds}}, function(err, guests) {
-            if (err) return res.json(err)
-            if(!guests) return res.json({message: 'No Guests'})
-            return res.json(guests)
-        })
-    })
-}
-
-function getRequests(req, res) {
-
-    Request.find({to: req.user._id}, function(err, requests) {
-        if (err) return res.json(err)
-        if (!requests) return res.json({message: "You have no requests"})
-        return res.json(requests)
-    })
+    }) 
 }
 
 function addGuest(req, res) {
@@ -301,7 +260,7 @@ function handleRequest(req, res) {
 
 function logOut(req, res) {
     req.session.destroy(function (err) {
-    res.redirect('/') //Inside a callback… bulletproof!
+        res.redirect('/')
   })
 }
 
@@ -359,6 +318,7 @@ function getSuperUnits(req, res) {
 function getUnits(req, res) {
     let communityId = req.params.communityId
     let superUnit = req.params.superUnit
+    
     Unit.find({communityId: communityId, superUnit: superUnit}, function(err, units) {
         if (err) return res.status(400)
         units.sort()
@@ -463,23 +423,16 @@ function getSecurityDashbaoard(req, res) {
         return res.status(403)
     }
 
-    Community.findOne({securityId: req.user._id}, function(err, community) {
-        if (err) return res.json(err)
-        if (!community) return res.json({message: "No community found"})
-        
-            Guest.find({communityId: community._id}, function(err, guests) {
-            if (err) return res.json(err)
-            if (!guests) return res.json({message: "No guests found"})
-            console.log(guests)
-            return res.render('security-dashboard', {
-                title: 'Security ' + req.user.username,
-                community: community.name, 
-                guests: guests,
-                navRight: "logout",
-                navRightText: "Log Out"
-            })
+    getDataForSecDashboard(req.user._id, function(err, community, guests) {
+        if (err) return res.status(400)
+        return res.render('security-dashboard', {
+            title: 'Security ' + req.user.username,
+            community: community.name,
+            guests: guests,
+            navRight: "logout",
+            navRightText: "Log Out"
         })
-    })    
+    }) 
 }
 
 function updateGuest(req, res) {
@@ -494,32 +447,15 @@ function updateGuest(req, res) {
 
             guest.remove(function(err) {
                 if (err) return res.status(400)
-
-                Unit.find({residents: req.user._id}, function(err, units) {
-
-                    let unitIds = units.map(unit => unit._id)
-
-                    Request.find({to: req.user._id}, function(err, requests) {
-                        if (err) return res.status(400)
-                        
-                        Guest.find({unitId: {$in: unitIds}}, function(err, guests) {
-                            if (err) return res.status(400)
-                            if(guests.length === 0) return res.render('dashboard', {
-                                title: req.user.username,
-                                units: units, 
-                                requests: requests,
-                                navRight: "logout",
-                                navRightText: "Log Out"
-                            })
-                            return res.render('dashboard', {
-                                title: req.user.username, 
-                                units: units, 
-                                guests: guests,
-                                requests: requests,
-                                navRight: "logout",
-                                navRightText: "Log Out"
-                            })
-                        })
+                getDataForDashboard(req.user._id, function(err, units, requests, guests) {
+                    if (err) return res.status(400)
+                    return res.render('dashboard', {
+                        title: req.user.username, 
+                        units: units, 
+                        guests: guests,
+                        requests: requests,
+                        navRight: "logout",
+                        navRightText: "Log Out"
                     })
                 })
             })
@@ -529,23 +465,17 @@ function updateGuest(req, res) {
                     if (guest.status === 'In Transit') {
                     guest.update({status: 'Passed Gate'}, function(err, guest) {
                         if (err) return res.json(err)
-                        Community.findOne({securityId: req.user._id}, function(err, community) {
-                            if (err) return res.json(err)
-                            if (!community) return res.json({ message: "No community found" })
-
-                            Guest.find({ communityId: community._id }, function (err, guests) {
-                                if (err) return res.json(err)
-                                if (!guests) return res.json({ message: "No guests found" })
-                                console.log(guests)
-                                return res.render('security-dashboard', {
-                                    title: 'Security ' + req.user.username,
-                                    community: community.name,
-                                    guests: guests,
-                                    navRight: "logout",
-                                    navRightText: "Log Out"
-                                })
+                        
+                        getDataForSecDashboard(req.user._id, function(err, community, guests) {
+                            if (err) return res.status(400)
+                            return res.render('security-dashboard', {
+                                title: 'Security ' + req.user.username,
+                                community: community.name,
+                                guests: guests,
+                                navRight: "logout",
+                                navRightText: "Log Out"
                             })
-                        })  
+                        })   
                     }) 
                 }  
             }) 
@@ -588,5 +518,73 @@ function isLoggedIn(req, res, next) {
 app.listen(3000, function(req, res) {
   console.log('Server listening on port 3000')
 })
+
+/**
+ * Query Functions
+ */
+
+// Dashboard
+
+function getUserUnits(userId, callback) {
+    Unit.find({residents: userId}, function (err, units) {
+        if (err) return callback(err)
+        if (units) return callback(null, units)
+    })
+}
+
+function getUserRequests(userId, callback) {
+    Request.find({to: userId}, function (err, requests) {
+        if (err) return callback(err)
+        if (requests) return callback(null, requests)
+    })
+}
+
+function getUserGuests(unitIds, callback) {
+    Guest.find({unitId: {$in: unitIds}}, function(err, guests) {
+        if (err) return callback(err)
+        if (guests) return callback(null, guests)
+    })
+}
+
+function getDataForDashboard(userId, callback) {
+    
+    getUserUnits(userId, function(err, units) {
+        if (err) return callback(err)
+        getUserRequests(userId, function (err, requests) {
+            if (err) return callback(err)
+            getUserGuests(units.map(unit => unit._id), function(err, guests) {
+                if (err) return callback(err)
+                return callback(null, units, requests, guests)
+            })
+        })
+    })
+}
+
+// Security Dashboard
+
+function getSecurityCommunity(userId, callback) {
+    Community.findOne({securityId: userId}, function(err, community) {
+        if (err) return callback(err)
+        return callback(null, community)
+    })
+}
+
+function getCommunityGuests(communityId, callback) {
+    Guest.find({communityId: communityId}, function(err, guest) {
+        if (err) return callback(err)
+        return callback(null, guest)
+    })
+}
+
+function getDataForSecDashboard(userId, callback) {
+
+    getSecurityCommunity(userId, function(err, community) {
+        if (err) return callback(err)
+        getCommunityGuests(community._id, function(err, guests) {
+            if (err) return callback(err)
+            return callback(null, community, guests)
+        })
+    })
+}
 
 module.exports = app
