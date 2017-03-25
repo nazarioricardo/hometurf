@@ -74,23 +74,8 @@ app.use(passport.session())
  * Route Handlers
  */
 
-// Landing
-app.get('/', function (req, res) {
-
-    if (req.user) {
-        console.log(req.user.access)
-        if (req.user.access === 'security') {  
-            return res.redirect('/security-dashboard')
-        } else {
-            return res.redirect('/dashboard')
-        }
-    } else {
-        return res.redirect('/login')
-    }
-})
-
 // Login/Signup
-app.get('/login', getLogInPage)
+app.get('/', getLandingPage)
 app.post('/login', passport.authenticate('local', {failureRedirect: '/login'}), logInUser)
 app.get('/signup', getSignUpPage)
 app.post('/signup', createNewUser)
@@ -124,7 +109,15 @@ app.post('/guestRequest/:unitId', isLoggedIn, sendNewGuestRequest)
 
 // Login/Signup
 
-function getLogInPage(req, res) {
+function getLandingPage(req, res) {
+
+    if (req.user) {
+        if (req.user.access === 'security') {  
+            return res.redirect('/security-dashboard')
+        } else {
+            return res.redirect('/dashboard')
+        }
+    } 
     return res.render('landing', {title: 'Hometurf'})
 }
 
