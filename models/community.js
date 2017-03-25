@@ -31,7 +31,7 @@ const communitySchema = mongoose.Schema({
     superUnitType: {
         type: String,
         required: true,
-        enum: ['street', 'floor']
+        enum: ['Street', 'Floor']
     },
 
     city: {
