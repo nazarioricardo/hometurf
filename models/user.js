@@ -16,7 +16,7 @@ const userSchema = mongoose.Schema({
     access: {
         type: String,
         required: true,
-        enum: ['community-admin', 'security', 'resident'],
+        enum: ['community-admin', 'security', 'resident', 'hometurf-admin'],
         default: "resident"
     },
     

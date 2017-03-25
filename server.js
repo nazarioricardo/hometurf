@@ -16,6 +16,8 @@ const Request = require('./models/request')
 
 const app = express()
 
+process.env.NODE_ENV = "development"
+
 // Connect to database
 mongoose.Promise = global.Promise
 mongoose.connect('mongodb://localhost/hometurf')
@@ -102,6 +104,9 @@ app.post('/community', isLoggedIn, createCommunity)
 app.get('/securityDashboard', isLoggedIn, getSecurityDashbaoard)
 app.post('/updateGuest/:guestId', isLoggedIn, updateGuest)
 app.post('/guestRequest', isLoggedIn, sendNewGuestRequest)
+
+// Hometurf Admin
+app.get('/adminDashboard', isLoggedIn, getAdminDashboard)
 
 /**
  * Callbacks
@@ -493,6 +498,16 @@ function sendNewGuestRequest(req, res) {
             })
         })
     })
+}
+
+// Hometurf Admin
+
+function getAdminDashboard(req, res) {
+    if (req.user.access !== 'hometurf-admin') {
+        return res.status(403)
+    }
+
+
 }
 
 function isLoggedIn(req, res, next) {
