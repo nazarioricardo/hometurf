@@ -102,7 +102,6 @@ app.get('/createCommunity', isLoggedIn, getCreateCommunity)
 app.post('/createUnits/:communityId', isLoggedIn, createUnits)
 app.post('/createCommunity', isLoggedIn, createCommunity)
 app.post('/grantSecurityStatus', isLoggedIn, grantSecurityStatus)
-app.post('/community/:communityId', isLoggedIn, addUnitsToCommunity)
 
 // Security Guard
 app.get('/securityDashboard', isLoggedIn, getSecurityDashbaoard)
@@ -463,26 +462,10 @@ function createUnits(req, res) {
         listOfUnits.push(unit)
     }
 
-    listOfUnits.map(function(unit) {
-        unit.save(function(err, unit) {
-            if (err) return res.json(err)
-        })
+    Unit.insertMany(listOfUnits, function(err, units) {
+        if (err) return res.status(400)
         return res.redirect('/communityDashboard')
     })
-}
-
-function addUnitsToCommunity(req, res) {
-    
-    if (req.user.access == 'community-admin') {
-        let listOfUnits = req.body
-
-        listOfUnits.map(function(newUnit) {
-            unit.save(function(err, unit) {
-                if (err) return res.json(err)
-            })
-        })
-        return res.redirect('/communityDashboard')
-    }
 }
 
 function getCreateCommunity(req, res) {
