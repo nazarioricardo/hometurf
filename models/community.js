@@ -24,8 +24,7 @@ const communitySchema = mongoose.Schema({
     },
 
     securityId: {
-        type: String,
-        unique: true
+        type: [String],
     },
 
     superUnitType: {

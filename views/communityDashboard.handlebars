@@ -1,0 +1,78 @@
+<div class="page" id="communityDashboard">
+
+<h2>{{community.name}}</h2>   
+    
+    <div class="feed col-md-3" id="requests">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h3 class="panel-title">Requests</h3>
+                </div>
+                <div class="panel-body">
+                    <ul class="feed-list">
+                        {{#each requests}}
+                        <li class="well">
+                        <label class="form-group">{{message}}</label>
+                            <form action="/request/{{_id}}" method="POST">
+                                <input class="form-control form-group" type="radio" name="approved" value="yes">Yes
+                                <input class="form-control form-group" type="radio" name="approved" value="no">No
+                                <button class="form-control form-group btn-primary" type="submit" name="approved">Okay</button>
+                            </form>
+                        </li>
+                        {{/each}}
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="feed col-md-3" id="units">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h3 class="panel-title">Units</h3>
+                </div>
+                <div class="panel-body">
+                    <ul class="well feed-list">
+                        {{#each units}}
+                        <li class="well">{{name}} {{superUnit}}</li>
+                        {{/each}}
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="feed col-md-3" id="addUnits">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h3 class="panel-title">Add Units</h3>
+                </div>
+                <div class="panel-body">
+                    <form action="/createUnits/{{community._id}}" method="POST">
+                        <input class="form-control form-group" id="addSuperUnit" name="superUnit" placeholder="{{community.superUnitType}}" value="{{superUnit}}">
+                        <input class="form-control form-group" id="unitPrefix" name="unitPrefix" placeholder="Unit Prefix">
+                        <input class="form-control form-group" id="lowestNumber" name="lowestNumber" placeholder="Lowest Number">
+                        <input class="form-control form-group" id="highestNumber" name="highestNumber" placeholder="Highest Number">
+                        <button class="form-control form-group btn-primary" type="submit">Add Unit</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="feed col-md-3" id="addUnits">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h3 class="panel-title">Security</h3>
+                </div>
+                <div class="panel-body">
+                    <form action="/grantSecurityStatus" method="POST">
+                        <input class="form-control form-group" id="addSecurityName" name="username" placeholder="Security Username">
+                        <button class="form-control form-group btn-primary" type="submit">Grant Security Status</button>
+                    </form>
+                    <ul class="well">
+                    {{#each guards}}
+                        <li class="well">{{username}}</li>
+                    {{/each}}
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+</div>

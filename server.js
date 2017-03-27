@@ -78,7 +78,7 @@ app.use(passport.session())
 
 // Login/Signup
 app.get('/', getLandingPage)
-app.post('/login', passport.authenticate('local', {failureRedirect: '/login'}), logInUser)
+app.post('/login', passport.authenticate('local', {failureRedirect: '/'}), logInUser)
 app.get('/signup', getSignUpPage)
 app.post('/signup', createNewUser)
 app.get('/logout', logOut)
@@ -89,16 +89,20 @@ app.post('/addguest/:unitId', isLoggedIn, addGuest)
 app.post('/request/:requestId', isLoggedIn, handleRequest)
 
 // Onboarding
-app.get('/findCommunity', getCities)
-app.get('/findCommunity/:city', getCommunitiesByCity)
-app.get('/findSuperUnit/:communityId', isLoggedIn, getSuperUnits)
-app.get('/findUnit/:communityId/:superUnit', isLoggedIn, getUnits)
+app.get('/findCommunity', findCities)
+app.get('/findCommunity/:city', findCommunitiesByCity)
+app.get('/findSuperUnit/:communityId', isLoggedIn, findSuperUnits)
+app.get('/findUnit/:communityId/:superUnit', isLoggedIn, findUnits)
 app.post('/sendRequest/:unitId', isLoggedIn, sendNewResidentRequest)
 app.get('/standby', isLoggedIn, standby)
 
 // Community Admin
+app.get('/communityDashboard', isLoggedIn, getCommunityDashboard)
+app.get('/createCommunity', isLoggedIn, getCreateCommunity)
+app.post('/createUnits/:communityId', isLoggedIn, createUnits)
+app.post('/createCommunity', isLoggedIn, createCommunity)
+app.post('/grantSecurityStatus', isLoggedIn, grantSecurityStatus)
 app.post('/community/:communityId', isLoggedIn, addUnitsToCommunity)
-app.post('/community', isLoggedIn, createCommunity)
 
 // Security Guard
 app.get('/securityDashboard', isLoggedIn, getSecurityDashbaoard)
@@ -107,6 +111,7 @@ app.post('/guestRequest', isLoggedIn, sendNewGuestRequest)
 
 // Hometurf Admin
 app.get('/adminDashboard', isLoggedIn, getAdminDashboard)
+app.post('/grantCommunityAdmin', isLoggedIn, grantCommunityAdmin)
 
 /**
  * Callbacks
@@ -119,6 +124,10 @@ function getLandingPage(req, res) {
     if (req.user) {
         if (req.user.access === 'security') {  
             return res.redirect('/securityDashboard')
+        } else if (req.user.access === 'community-admin') {
+            return res.redirect('/communityDashboard')
+        } else if (req.user.access === 'hometurf-admin') {
+            return res.redirect('/adminDashboard')
         } else {
             return res.redirect('/dashboard')
         }
@@ -127,8 +136,15 @@ function getLandingPage(req, res) {
 }
 
 function logInUser(req, res) {
-    if (req.user.access === 'security') return res.redirect('/securityDashboard')
-    return res.redirect('/dashboard')
+    if (req.user.access === 'security') {  
+            return res.redirect('/securityDashboard')
+        } else if (req.user.access === 'community-admin') {
+            return res.redirect('/communityDashboard')
+        } else if (req.user.access === 'hometurf-admin') {
+            return res.redirect('/adminDashboard')
+        } else {
+            return res.redirect('/dashboard')
+        }
 }
 
 function getSignUpPage(req, res) {
@@ -141,7 +157,7 @@ function createNewUser(req, res) {
     
     user.save(function(err, user) {
         if (err) return res.json(err).status(400)
-        return res.redirect('/login')
+        return res.redirect('/')
     })
 }
 
@@ -215,12 +231,28 @@ function handleRequest(req, res) {
                 Unit.findOneAndUpdate({_id: unitId}, {$push: {residents:userToApprove}}, function(err, unit) {
                     if (err) return next(err)
                     request.remove(function(err, request) {
-                        return res.redirect('/dashboard')
+                        if (req.user.access === 'security') {  
+                            return res.redirect('/securityDashboard')
+                        } else if (req.user.access === 'community-admin') {
+                            return res.redirect('/communityDashboard')
+                        } else if (req.user.access === 'hometurf-admin') {
+                            return res.redirect('/adminDashboard')
+                        } else {
+                            return res.redirect('/dashboard')
+                        }
                     })
                 })
             } else {
                 request.remove(function(err, request) {
-                    return res.redirect('/dashboard')
+                if (req.user.access === 'security') {
+                        return res.redirect('/securityDashboard')
+                    } else if (req.user.access === 'community-admin') {
+                        return res.redirect('/communityDashboard')
+                    } else if (req.user.access === 'hometurf-admin') {
+                        return res.redirect('/adminDashboard')
+                    } else {
+                        return res.redirect('/dashboard')
+                    }
                 })
             }
         } else {
@@ -243,14 +275,30 @@ function handleRequest(req, res) {
                         guest.save(function(err, guest) {
                             if (err) return res.json(err)
                             request.remove(function(err, request) {
-                                return res.redirect('/dashboard')
+                            if (req.user.access === 'security') {
+                                return res.redirect('/securityDashboard')
+                                } else if (req.user.access === 'community-admin') {
+                                    return res.redirect('/communityDashboard')
+                                } else if (req.user.access === 'hometurf-admin') {
+                                    return res.redirect('/adminDashboard')
+                                } else {
+                                    return res.redirect('/dashboard')
+                                }
                             })
                         })
                     })
                 }
             } else {
                     request.remove(function(err, request) {
-                    return res.redirect('/dashboard')
+                    if (req.user.access === 'security') {
+                        return res.redirect('/securityDashboard')
+                    } else if (req.user.access === 'community-admin') {
+                        return res.redirect('/communityDashboard')
+                    } else if (req.user.access === 'hometurf-admin') {
+                        return res.redirect('/adminDashboard')
+                    } else {
+                        return res.redirect('/dashboard')
+                    }
                 })
             }
         }
@@ -265,7 +313,7 @@ function logOut(req, res) {
 
 // Onboarding
 
-function getCities(req, res) {
+function findCities(req, res) {
 
     Community.find({}).distinct('city', function(err, cities) {
         if (err) return res.status(400)
@@ -278,7 +326,7 @@ function getCities(req, res) {
     })
 }
 
-function getCommunitiesByCity(req, res) {
+function findCommunitiesByCity(req, res) {
 
     let city = req.params.city
 
@@ -294,7 +342,7 @@ function getCommunitiesByCity(req, res) {
     })
 }
 
-function getSuperUnits(req, res) {
+function findSuperUnits(req, res) {
     let communityId = req.params.communityId
     Unit.find({communityId: communityId}).distinct('superUnit', function(err, superUnits) {
         if (err) return res.status(400)
@@ -314,7 +362,7 @@ function getSuperUnits(req, res) {
     })
 }
 
-function getUnits(req, res) {
+function findUnits(req, res) {
     let communityId = req.params.communityId
     let superUnit = req.params.superUnit
     
@@ -378,21 +426,49 @@ function standby(req, res) {
 
 // Community Admin
 
-function createCommunity(req, res) {
+function getCommunityDashboard(req, res) {
+    getDataForCommunityDashboard(req.user._id, function(err, community, requests, superUnits, units, guards) {
+        if (err) return res.status(400)
+        if (!community) return res.redirect('/createCommunity')
+        return res.render('communityDashboard', {
+            title: "Community Admin " + req.user.username,
+            community: community,
+            requests: requests,
+            superUnits: superUnits,
+            units: units,
+            guards: guards,
+            navRight: "logout",
+            navRightText: "Log Out"
+        })
+    })
+}
 
-    let userId = req.user._id
-    let userAccess = req.user.access
+function createUnits(req, res) {
+    
+    if (req.user.access !== 'community-admin') return res.status(400)
+    
+    let superUnit = req.body.superUnit
+    let communityId = req.params.communityId
+    let unitPrefix = req.body.unitPrefix
+    let lowestNumber = Number(req.body.lowestNumber)
+    let highestNumber = Number(req.body.highestNumber)
+    let listOfUnits = []
 
-    if (userAccess == "community-admin") {
-
-        let community = new Community(req.body)
-        community.adminId = userId
-
-        community.save(function(err, community) {
-            if (err) return res.json(err)
-            return res.json(community)
-        })  
+    for (let i = lowestNumber; i <= highestNumber; i++) {
+        let unit = new Unit({
+            superUnit: superUnit,
+            name: unitPrefix + i,
+            communityId: communityId
+        })
+        listOfUnits.push(unit)
     }
+
+    listOfUnits.map(function(unit) {
+        unit.save(function(err, unit) {
+            if (err) return res.json(err)
+        })
+        return res.redirect('/communityDashboard')
+    })
 }
 
 function addUnitsToCommunity(req, res) {
@@ -401,16 +477,50 @@ function addUnitsToCommunity(req, res) {
         let listOfUnits = req.body
 
         listOfUnits.map(function(newUnit) {
-
-            newUnit.communityId = req.params.communityId
-            let unit = new Unit(newUnit)
-
-            console.log(unit)
             unit.save(function(err, unit) {
                 if (err) return res.json(err)
             })
         })
-        return res.json(listOfUnits)
+        return res.redirect('/communityDashboard')
+    }
+}
+
+function getCreateCommunity(req, res) {
+    return res.render('createCommunity')
+}
+
+function grantSecurityStatus(req, res) {
+    User.findOneAndUpdate({username: req.body.username}, {$set: {access: "security"}}, function(err, user) {
+        if (err) return res.status(400)
+        Community.findOneAndUpdate({adminId: req.user._id}, {$push: {securityId: user._id}}, function(err, community) {
+            if (err) return res.status(400)
+            return res.redirect('/communityDashboard')
+        })
+    })
+}
+
+function createCommunity(req, res) {
+
+    if (req.user.access === 'community-admin') {
+
+        let newCommunity = new Community({
+            name: req.body.name,
+            city: req.body.city,
+            adminId: req.user._id,
+            administrationEmail: req.body.administrationEmail,
+            administration: req.body.administration
+        })
+    
+        if (req.body.superUnitType.includes('Street')) {
+            newCommunity.superUnitType = 'Street'
+        } else {
+            newCommunity.superUnitType = 'Floor'
+        }
+
+        newCommunity.save(function(err, community) {
+            if (err) return res.json(err)
+            return res.redirect('/communityDashboard')
+        }) 
     }
 }
 
@@ -506,8 +616,19 @@ function getAdminDashboard(req, res) {
     if (req.user.access !== 'hometurf-admin') {
         return res.status(403)
     }
+    return res.render('adminDashboard', {
+        title: 'Master Admin',
+        navRight: 'logout',
+        navRightText: 'Log Out'
+    })
+}
 
+function grantCommunityAdmin(req, res) {
 
+    User.findOneAndUpdate({username: req.body.username}, {$set: {access: 'community-admin'}}, function(err, user) {
+        if (err) return res.status(400)
+        return res.redirect('/adminDashboard')
+    })
 }
 
 function isLoggedIn(req, res, next) {
@@ -556,6 +677,70 @@ function getDataForDashboard(userId, callback) {
             getUserGuests(units.map(unit => unit._id), function(err, guests) {
                 if (err) return callback(err)
                 return callback(null, units, requests, guests)
+            })
+        })
+    })
+}
+
+// Community Dashboard
+
+function getCommunity(userId, callback) {
+    Community.findOne({adminId: userId}, function(err, community) {
+        if (err) return callback(err)
+        return callback(null, community)
+    })
+}
+
+function getCommunityRequests(userId, callback) {
+    Request.find({to: userId}, function(err, requests) {
+        if (err) return callback(err)
+        return callback(null, requests)
+    })
+}
+
+function getSuperUnits(communityId, callback) {
+    Unit.find({communityId: communityId}).distinct('superUnit', function(err, superUnits) {
+        if (err) return callback(err)
+        return callback(null, superUnits)
+    })
+}
+
+function getUnits(communityId, callback) {
+    Unit.find({communityId: communityId}, function(err, units) {
+        if (err) return callback(err)
+        return callback(null, units)
+    })
+}
+
+function getSecurityGuards(communityId, callback) {
+    
+    Community.findOne({_id: communityId}, function(err, community) {
+        if (err) return callback(err)
+        User.find({_id: community.securityId}, function(err, securityUser) {
+            if (err) return callback(err)
+            return callback(null, securityUser)
+        })
+    })
+}
+
+function getDataForCommunityDashboard(userId, callback) {
+    getCommunity(userId, function(err, community) {
+        if (err) return callback(err)
+        if (!community) return callback(null, null)
+        getCommunityRequests(userId, function(err, requests) {
+            if (err) return callback(err)
+            getSuperUnits(community._id, function(err, superUnits) {
+                if (err) return callback(err)
+                getUnits(community._id, function(err, units) {
+                    if (err) return callback(err)
+                    getSecurityGuards(community._id, function(err, securityUser) {
+                        if (err) return callback(err)
+                        superUnits.sort()
+                        units.sort()
+                        securityUser.sort()
+                        return callback(null, community, requests, superUnits, units, securityUser)
+                    })
+                })
             })
         })
     })

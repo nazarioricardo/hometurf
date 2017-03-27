@@ -1,0 +1,21 @@
+
+<div class="page" id="comm-dashboard">
+    <div class="feed col-md-4" id="units">
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h3 class="panel-title">Units</h3>
+            </div>
+            <div class="panel-body">
+                <form action="/createCommunity" method="POST">
+                    <input class="form-control form-group" id="communityName" name="name" placeholder="Community Name">
+                    <input class="form-control form-group" id="communityCity" name="city" placeholder="City">
+                    <input class="form-control form-group" id="adminEmail" name="administrationEmail" placeholder="Admin Email">
+                    <input class="form-control form-group" id="adminName" name="administration" placeholder="Administration Name">
+                    <input class="form-control form-group" type="radio" name="superUnitType" value="Street">Urbanization
+                    <input class="form-control form-group" type="radio" name="superUnitType" value="Floor">Apartment Building
+                    <button class="form-control form-group btn-primary" type="submit">Create Community</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
