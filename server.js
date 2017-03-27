@@ -16,11 +16,16 @@ const Request = require('./models/request')
 
 const app = express()
 
-process.env.NODE_ENV = "development"
+let environment = process.env.NODE_ENV
 
 // Connect to database
 mongoose.Promise = global.Promise
-mongoose.connect('mongodb://localhost/hometurf')
+
+if (environment = 'production') {
+    mongoose.connect('mongodb://ricardo.n:' + process.env.mongopassword + '@ds029745.mlab.com:29745/hometurf')
+} else {
+    mongoose.connect('mongodb://localhost/hometurf')
+}
 
 /**
  * Handlebars
@@ -136,14 +141,14 @@ function getLandingPage(req, res) {
 
 function logInUser(req, res) {
     if (req.user.access === 'security') {  
-            return res.redirect('/securityDashboard')
-        } else if (req.user.access === 'community-admin') {
-            return res.redirect('/communityDashboard')
-        } else if (req.user.access === 'hometurf-admin') {
-            return res.redirect('/adminDashboard')
-        } else {
-            return res.redirect('/dashboard')
-        }
+        return res.redirect('/securityDashboard')
+    } else if (req.user.access === 'community-admin') {
+        return res.redirect('/communityDashboard')
+    } else if (req.user.access === 'hometurf-admin') {
+        return res.redirect('/adminDashboard')
+    } else {
+        return res.redirect('/dashboard')
+    }
 }
 
 function getSignUpPage(req, res) {

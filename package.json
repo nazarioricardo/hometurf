@@ -24,5 +24,11 @@
   "devDependencies": {
     "jest": "^19.0.2",
     "supertest": "^3.0.0"
+  },
+  "now": {
+    "env": {
+      "NODE_ENV":"production",
+      "mongopassword":"@mongoprodpassword"
+    }
   }
 }
