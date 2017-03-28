@@ -16,16 +16,17 @@ const Request = require('./models/request')
 
 const app = express()
 
-let environment = process.env.NODE_ENV
-
 // Connect to database
 mongoose.Promise = global.Promise
 
-if (environment === 'production') {
-    mongoose.connect('mongodb://ricardon:' + process.env.mongopassword + '@ds029745.mlab.com:29745/hometurf')
+let url
+
+if (process.env.NODE_ENV === 'production') {
+    url = `mongodb://ricardon:${process.env.mongopassword}@ds029745.mlab.com:29745/hometurf`
 } else {
-    mongoose.connect('mongodb://localhost/hometurf')
+    url = 'mongodb://localhost/hometurf'
 }
+mongoose.connect(url)
 
 /**
  * Handlebars
@@ -44,7 +45,6 @@ app.set('view engine', 'handlebars')
 passport.use('local', new LocalStrategy(
     function(username, password, next) {
         User.findOne({username: username}, function(err, user) {
-            // console.log(user)
             if (err) return next(err)
             if (!user) return next(null, false) // No user found with username
             user.verifyPassword(password, function (err, passwordMatch) {

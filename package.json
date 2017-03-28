@@ -28,7 +28,7 @@
   "now": {
     "env": {
       "NODE_ENV":"production",
-      "mongopassword":"@mongoprodpassword"
+      "mongopassword":"@mongopassword"
     }
   }
 }
