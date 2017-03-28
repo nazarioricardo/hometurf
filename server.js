@@ -21,7 +21,7 @@ let environment = process.env.NODE_ENV
 // Connect to database
 mongoose.Promise = global.Promise
 
-if (environment == 'production') {
+if (environment === 'production') {
     mongoose.connect('mongodb://ricardon:' + process.env.mongopassword + '@ds029745.mlab.com:29745/hometurf')
 } else {
     mongoose.connect('mongodb://localhost/hometurf')
