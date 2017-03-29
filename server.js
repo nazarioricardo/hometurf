@@ -348,14 +348,16 @@ function findCommunitiesByCity(req, res) {
 
 function findSuperUnits(req, res) {
     let communityId = req.params.communityId
+    
     Unit.find({communityId: communityId}).distinct('superUnit', function(err, superUnits) {
         if (err) return res.status(400)
+        if (superUnits.length === 0) return res.json({msg: 'No superunits found'})
         superUnits.sort()
 
-        Community.find({_id: communityId}, function(err, community) {
+        Community.findById(communityId, function(err, community) {
             if (err) return res.status(400)
-
-            return res.render('superUnits', {
+            if (!community) return res.json({msg: 'No community found'})
+            return res.render('superunits', {
                 superUnits: superUnits, 
                 communityId: communityId,
                 superUnitType: community.superUnitType,
