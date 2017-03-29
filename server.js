@@ -424,10 +424,16 @@ function sendNewResidentRequest(req, res) {
 }
 
 function standby(req, res) {
-    return res.render('standby', {
-        navRight: "logout",
-        navRightText: "Log Out" 
+
+    Unit.find({residents:req.user._d}, function(err, units) {
+        if (err) return res.status(400)
+        if (units.length === 0) return res.render('standby', {
+            navRight: "logout",
+            navRightText: "Log Out" 
+        })
+        return res.redirect('/dashboard')
     })
+    
 }
 
 // Community Admin
@@ -476,7 +482,10 @@ function createUnits(req, res) {
 }
 
 function getCreateCommunity(req, res) {
-    return res.render('createCommunity')
+    return res.render('createCommunity', {
+        navRight: "logout",
+        navRightText: "Log Out"
+    })
 }
 
 function grantSecurityStatus(req, res) {
