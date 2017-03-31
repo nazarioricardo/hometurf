@@ -19,7 +19,8 @@
     "fs": "0.0.1-security",
     "mongoose": "^4.8.3",
     "passport": "^0.3.2",
-    "passport-local": "^1.0.0"
+    "passport-local": "^1.0.0",
+    "socket.io": "^1.7.3"
   },
   "devDependencies": {
     "jest": "^19.0.2",
@@ -27,8 +28,8 @@
   },
   "now": {
     "env": {
-      "NODE_ENV":"production",
-      "mongopassword":"@mongopassword"
+      "NODE_ENV": "production",
+      "mongopassword": "@mongopassword"
     }
   }
 }

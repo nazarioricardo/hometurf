@@ -15,6 +15,8 @@ const Guest = require('./models/guest')
 const Request = require('./models/request')
 
 const app = express()
+const server = require('http').createServer(app)
+const io = require('socket.io')(server)
 
 // Connect to database
 mongoose.Promise = global.Promise
@@ -636,7 +638,14 @@ function isLoggedIn(req, res, next) {
     return res.redirect('/')
 }
 
-app.listen(3000, function(req, res) {
+io.on('connection', function(socket) {
+    console.log('Client connected')
+    socket.on('disconnect', function(){
+        console.log('Client disconnected');
+    })
+})
+
+server.listen(3000, function(req, res) {
   console.log('Server listening on port 3000')
 })
 

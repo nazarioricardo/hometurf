@@ -3,23 +3,23 @@
         
         <div class="feed col-md-4" id="guests">
             <div class="panel panel-default">
-            <div class="panel-heading">
-                <h3 class="panel-title">Guests</h3>
-            </div>
-            <div class="panel-body">
-                <ul class="feed-list">
-                {{#each guests}}
-                    <li class="well">
-                    <form action="/updateGuest/{{_id}}" method="POST">
-                        <label class="form-group">{{name}}</label><br> 
-                        <label class="form-group">{{status}}</label>
+                <div class="panel-heading">
+                    <h3 class="panel-title">Guests</h3>
+                </div>
+                <div class="panel-body">
+                    <ul class="feed-list">
+                    {{#each guests}}
+                        <li class="well">
+                            <form action="/updateGuest/{{_id}}" method="POST">
+                                <label class="form-group">{{name}}</label><br> 
+                                <label class="form-group">{{status}}</label>
 
-                        <button class="form-control form-group btn-primary"  type="submit">Confirm</button>
-                    </form>
-                    </li>
-                {{/each}}
-                </ul>
-            </div>
+                                <button class="form-control form-group btn-primary"  type="submit">Confirm</button>
+                            </form>
+                        </li>
+                    {{/each}}
+                    </ul>
+                </div>
             </div>   
         </div>
 
@@ -32,7 +32,7 @@
                     <ul class="feed-list">
                         {{#each requests}}
                         <li class="well">
-                        <label class="form-group">{{message}}</label>
+                            <label class="form-group">{{message}}</label>
                             <form action="/request/{{_id}}" method="POST">
                                 <input class="form-control form-group" type="radio" name="approved" value="yes">Yes
                                 <input class="form-control form-group" type="radio" name="approved" value="no">No
@@ -55,12 +55,12 @@
                         {{#each units}}
                         <li class="well">
     
-                        <form action="/addguest/{{_id}}" method="POST">
-                            <label class="form-group">{{name}}</label>
-                            <label class="form-group">{{superUnit}}</label>
-                            <input class="form-control form-group" id="guestName" name="name" placeholder="New Guest's Name">
-                            <button class="form-control form-group btn-primary" type="submit">Add Guest</button>
-                        </form>
+                            <form action="/addguest/{{_id}}" method="POST">
+                                <label class="form-group">{{name}}</label>
+                                <label class="form-group">{{superUnit}}</label>
+                                <input class="form-control form-group" id="guestName" name="name" placeholder="New Guest's Name">
+                                <button class="form-control form-group btn-primary" type="submit">Add Guest</button>
+                            </form>
                         </li>
                         {{/each}}
                     </ul>
