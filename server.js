@@ -188,6 +188,11 @@ function getDashboard(req, res) {
                 return res.redirect('/findCommunity')
             })
         } else {
+            io.on('connection', function(socket) {
+                for (let i = 0; i < units.length; i++) {
+                    socket.join(units[i]._id)
+                }
+            })
             return res.render('dashboard', {
                 title: req.user.username, 
                 units: units, 
@@ -216,6 +221,7 @@ function addGuest(req, res) {
             guest.communityId = unit.communityId
             guest.save(function(err, guest) {
                 if (err) return res.json(err)
+                io.to("sec" + guest.communityId).emit('new guest', guest)
                 return res.status(201).redirect('/dashboard')
             })
         })
@@ -280,6 +286,7 @@ function handleRequest(req, res) {
                         guest.status = "Passed Gate"
                         guest.save(function(err, guest) {
                             if (err) return res.json(err)
+                            io.to("sec" + unit.communityId).emit('new guest', guest)
                             request.remove(function(err, request) {
                             if (req.user.access === 'security') {
                                 return res.redirect('/securityDashboard')
@@ -412,6 +419,7 @@ function sendNewResidentRequest(req, res) {
 
                 request.save(function(err, request) {
                     if (err) return res.json(err)
+                    io.to("admin" + communityId).emit('new request', request)
                     return res.redirect('/standby')
                 })
             })
@@ -419,6 +427,7 @@ function sendNewResidentRequest(req, res) {
             request.to = unit.residents
             request.save(function(err, request) {
                 if (err) return res.json(err)
+                io.to(unitId).emit('new request', request)
                 return res.redirect('/standby')
             })
         }
@@ -444,6 +453,9 @@ function getCommunityDashboard(req, res) {
     getDataForCommunityDashboard(req.user._id, function(err, community, requests, superUnits, units, guards) {
         if (err) return res.status(400)
         if (!community) return res.redirect('/createCommunity')
+        io.on('connection', function(socket) {
+            socket.join("admin" + community._id)
+        })
         return res.render('communityDashboard', {
             title: "Community Admin " + req.user.username,
             community: community,
@@ -535,6 +547,10 @@ function getSecurityDashbaoard(req, res) {
 
     getDataForSecDashboard(req.user._id, function(err, community, guests) {
         if (err) return res.status(400)
+
+        io.on('connection', function(socket) {
+            socket.join("sec" + community._id)
+        })
         return res.render('securityDashboard', {
             title: 'Security ' + req.user.username,
             community: community,
@@ -557,14 +573,18 @@ function updateGuest(req, res) {
 
             guest.remove(function(err) {
                 if (err) return res.status(400)
+                io.to("sec" + guest.communityId).emit('guest confirmed', guest)
                 return res.redirect('/dashboard')
             })
         } else {
 
             Community.findOne({securityId: req.user._id}, function(err, community) {
                     if (guest.status === 'In Transit') {
-                    guest.update({status: 'Passed Gate'}, function(err, guest) {
-                        if (err) return res.json(err)
+                    guest.update({status: 'Passed Gate'}, function(err, updatedGuest) {
+                        if (err) return res.status(400)
+                        console.log(io.sockets.adapter.rooms)
+                        console.log(guest.unitId)
+                        io.to(guest.unitId).emit('guest confirmed', guest)
                         return res.redirect('/securityDashboard') 
                     }) 
                 }  
@@ -605,6 +625,7 @@ function sendNewGuestRequest(req, res) {
 
             request.save(function(err, request) {
                 if (err) return res.json(err)
+                io.to(unit._id).emit('new request', request)
                 return res.redirect('/securityDashboard')
             })
         })
