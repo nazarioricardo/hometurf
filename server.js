@@ -22,7 +22,6 @@ const io = require('socket.io')(server)
 mongoose.Promise = global.Promise
 
 let url
-
 if (process.env.NODE_ENV === 'production') {
     url = `mongodb://ricardon:${process.env.mongopassword}@ds029745.mlab.com:29745/hometurf`
 } else {
@@ -42,6 +41,10 @@ app.engine('handlebars', handlebars({
     defaultLayout: 'main'
 }))
 app.set('view engine', 'handlebars')
+
+/**
+ * Passport
+ */
 
 // Declare auth strategy
 passport.use('local', new LocalStrategy(
@@ -207,8 +210,7 @@ function getDashboard(req, res) {
 
 function addGuest(req, res) {
     
-    let guest = new Guest()
-    guest.name = req.body.name
+    let guest = new Guest(req.body)
     
     if (req.user.access != 'security') {
 
@@ -288,6 +290,7 @@ function handleRequest(req, res) {
                             if (err) return res.json(err)
                             io.to("sec" + unit.communityId).emit('new guest', guest)
                             request.remove(function(err, request) {
+                            
                             if (req.user.access === 'security') {
                                 return res.redirect('/securityDashboard')
                                 } else if (req.user.access === 'community-admin') {
