@@ -2,6 +2,8 @@ const express = require('express')
 const router = express.Router()
 const passport = require('passport')
 
+const cb = require('./callbacks')
+
 const User = require('../models/user')
 const Community = require('../models/community')
 const Unit = require('../models/unit')
@@ -23,7 +25,6 @@ router.initSocket = function(app) {
  */
 
 router.get('/', getLandingPage)
-
 // Login/Signup
 router.post('/login', passport.authenticate('local', {failureRedirect: '/'}), logInUser)
 router.get('/signup', getSignUpPage)
@@ -156,6 +157,12 @@ function handleRequest(req, res) {
     let requestId = req.params.requestId
     let userToApprove = ''
     let unitId = ''
+
+    /* 
+        TODO: Must make into multiple functions.
+            1. Community Admin handle new resident request
+            2. Resident handle new guest request
+    */
 
     Request.findById(requestId, function(err, request) {
         
