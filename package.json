@@ -20,7 +20,8 @@
     "mongoose": "^4.8.3",
     "passport": "^0.3.2",
     "passport-local": "^1.0.0",
-    "socket.io": "^1.7.3"
+    "socket.io": "^1.7.3",
+    "twilio": "^2.11.1"
   },
   "devDependencies": {
     "jest": "^19.0.2",
