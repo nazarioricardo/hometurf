@@ -1,6 +1,7 @@
 const express = require('express')
 const router = express.Router()
 const passport = require('passport')
+const twilio = require('twilio')('ACf1039d321356e792d4ef420f007a6a9c', '83f9d8f15492477610772f2ab1aac58b')
 
 const cb = require('./callbacks')
 
@@ -9,6 +10,7 @@ const Community = require('../models/community')
 const Unit = require('../models/unit')
 const Guest = require('../models/guest')
 const Request = require('../models/request')
+
 
 let server
 let io
@@ -101,7 +103,7 @@ function getDashboard(req, res) {
     let userReqs = []
     let userGuests = []
 
-    if (access === 'security') return res.status(403)
+    if (access == 'security') return res.status(403)
 
     getDataForDashboard(userId, function(err, units, requests, guests) {
         if (err) return res.status(400)
@@ -155,63 +157,21 @@ function addGuest(req, res) {
 function handleRequest(req, res) {
     
     let requestId = req.params.requestId
-    let userToApprove = ''
-    let unitId = ''
 
-    /* 
-        TODO: Must make into multiple functions.
-            1. Community Admin handle new resident request
-            2. Resident handle new guest request
-    */
+    /**
+     * TODO: Seperate both requests handlers into separate routes
+     */
 
     Request.findById(requestId, function(err, request) {
-        
-        userToApprove = request.from
-        unitId = request.unit
+        if (err) return res.status(400) 
         if (request.requestType == 'New Resident Request') {
-            if (req.body.approved.includes('yes')) {
-                Unit.findOneAndUpdate({_id: unitId}, {$push: {residents:userToApprove}}, function(err, unit) {
-                    if (err) return next(err)
-                    request.remove(function(err, request) {
-                        res.redirect(redirectToDashboard(req.user.access))
-                    })
-                })
-            } else {
-                request.remove(function(err, request) {
-                    res.redirect(redirectToDashboard(req.user.access))
-                })
-            }
+            newResidentHandler(req.body.approved, request, request.from, function(err, success) {
+                if (success) return res.redirect(redirectToDashboard(req.user.access))
+            })
         } else {
-
-            let guest = new Guest()
-
-            if (req.body.approved.includes('yes')) {
-
-                if (req.user.access != 'security') {
-
-                    guest.name = request.message.split(" is")[0]
-                    guest.unitId = request.unit
-                    guest.approvedBy = req.user._id
-
-                    Unit.findOne({_id: guest.unitId}, function(err, unit) {
-                        if (err) return res.json(err)
-                        if (!unit) return res.json({message: "No unit found"})
-                        guest.communityId = unit.communityId
-                        guest.status = "Passed Gate"
-                        guest.save(function(err, guest) {
-                            if (err) return res.json(err)
-                            io.to("sec" + unit.communityId).emit('new guest', guest)
-                            request.remove(function(err, request) {
-                                res.redirect(redirectToDashboard(req.user.access))
-                            })
-                        })
-                    })
-                }
-            } else {
-                    request.remove(function(err, request) {
-                        res.redirect(redirectToDashboard(req.user.access))
-                })
-            }
+            newGuestHandler(req.body.approved, request, req.user, function(err, success) {
+                if (success) return res.redirect(redirectToDashboard(req.user.access))
+            })
         }
     })
 }
@@ -482,9 +442,12 @@ function updateGuest(req, res) {
                     if (guest.status === 'In Transit') {
                     guest.update({status: 'Passed Gate'}, function(err, updatedGuest) {
                         if (err) return res.status(400)
-                        console.log(io.sockets.adapter.rooms)
-                        console.log(guest.unitId)
+                        
                         io.to(guest.unitId).emit('guest confirmed', guest)
+                        
+                        notifyResident('+13106995339', "This is a test", function(err, msg) {
+                            if (err) return res.status(400)
+                        })
                         return res.redirect('/securityDashboard') 
                     }) 
                 }  
@@ -494,8 +457,6 @@ function updateGuest(req, res) {
 }
 
 function sendNewGuestRequest(req, res) {
-
-    console.log(req.body)
 
     let request = new Request()
     let guestName = req.body.guestName
@@ -510,7 +471,7 @@ function sendNewGuestRequest(req, res) {
         if (err) return res.json(err)
         if (!community) return res.json({message: "No community found"})
         communityId = community._id
-        console.log(communityId)
+
         Unit.findOne({name: unitName, superUnit: superUnit, communityId: communityId}, function(err, unit) {
             if (err) return res.json(err)
             if (!unit) return res.json({message: "No unit found"})
@@ -612,6 +573,37 @@ function getDataForDashboard(userId, callback) {
     })
 }
 
+function newGuestHandler(request, resident, callback) {
+
+    let guest = new Guest()
+
+    if (approved.includes('yes')) {
+        if (req.user.access === 'resident') {
+            guest.name = request.message.split(" is")[0]
+            guest.unitId = request.unit
+            guest.approvedBy = resident._id
+
+            Unit.findById(guest.unitId, function(err, unit) {
+                if (err) return callback(err)
+                if (!unit) return callback(null, null)
+                guest.communityId = unit.communityId
+                guest.status = 'Passed Gate'
+                guest.save(function(err, guest) {
+                    if (err) return callback(err)
+                    io.to("sec" + unit.communityId).emit('new guest', guest)
+                    request.remove(function(err, request) {
+                        return callback(null, true)
+                    })
+                })
+            })
+        }
+    } else {
+        request.remove(function(err, request) {
+            callback(null, false)
+        })
+    }
+}
+
 // Community Dashboard
 
 function getCommunity(userId, callback) {
@@ -676,6 +668,24 @@ function getDataForCommunityDashboard(userId, callback) {
     })
 }
 
+function newResidentHandler(approved, request, fromId, callback) {
+
+    if (request.requestType === 'New Resident Request') {
+        if (approved.includes('yes')) {
+            Unit.findOneAndUpdate({ _id: request.unit }, { $push: { residents: fromId } }, function (err, unit) {
+                if (err) return callback(err)
+                request.remove(function (err, request) {
+                    return callback(null, true)
+                })
+            })
+        } else {
+            request.remove(function (err, request) {
+                return callback(null, false)
+            })
+        }
+    }
+}
+
 // Security Dashboard
 
 function getSecurityCommunity(userId, callback) {
@@ -700,6 +710,19 @@ function getDataForSecDashboard(userId, callback) {
             if (err) return callback(err)
             return callback(null, community, guests)
         })
+    })
+}
+
+// Twilio
+
+function notifyResident(residentPhoneNumber, message, callback) {
+    twilio.messages.create({
+        to: residentPhoneNumber,
+        from: '+17874183263',
+        body: message
+    }, function(err, message) {
+        if (err) return callback(err)
+        return callback(null, message)
     })
 }
 
