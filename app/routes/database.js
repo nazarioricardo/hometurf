@@ -1,31 +1,37 @@
+const User = require('../models/user')
+const Community = require('../models/community')
+const Unit = require('../models/unit')
+const Guest = require('../models/guest')
+const Request = require('../models/request')
+
 /**
  * Query Functions
  */
 
 // Resident Dashboard
 
-function getUserUnits(userId, callback) {
+let getUserUnits = function(userId, callback) {
     Unit.find({residents: userId}, function (err, units) {
         if (err) return callback(err)
         if (units) return callback(null, units)
     })
 }
 
-function getUserRequests(userId, callback) {
+let getUserRequests = function(userId, callback) {
     Request.find({to: userId}, function (err, requests) {
         if (err) return callback(err)
         if (requests) return callback(null, requests)
     })
 }
 
-function getUserGuests(unitIds, callback) {
+let getUserGuests = function(unitIds, callback) {
     Guest.find({unitId: {$in: unitIds}}, function(err, guests) {
         if (err) return callback(err)
         if (guests) return callback(null, guests)
     })
 }
 
-function getDataForDashboard(userId, callback) {
+exports.getDataForDashboard = function(userId, callback) {
     
     getUserUnits(userId, function(err, units) {
         if (err) return callback(err)
@@ -39,37 +45,68 @@ function getDataForDashboard(userId, callback) {
     })
 }
 
+exports.newGuestHandler = function(approved, request, resident, callback) {
+
+    let guest = new Guest()
+
+    if (approved.includes('yes')) {
+        if (resident.access === 'resident') {
+            guest.name = request.message.split(" is")[0]
+            guest.unitId = request.unit
+            guest.approvedBy = resident._id
+
+            Unit.findById(guest.unitId, function(err, unit) {
+                if (err) return callback(err)
+                if (!unit) return callback(null, null)
+                guest.communityId = unit.communityId
+                guest.status = 'Passed Gate'
+                guest.save(function(err, guest) {
+                    if (err) return callback(err)
+                    io.to("sec" + unit.communityId).emit('new guest', guest)
+                    request.remove(function(err, request) {
+                        return callback(null, true)
+                    })
+                })
+            })
+        }
+    } else {
+        request.remove(function(err, request) {
+            callback(null, false)
+        })
+    }
+}
+
 // Community Dashboard
 
-function getCommunity(userId, callback) {
+let getCommunity = function(userId, callback) {
     Community.findOne({adminId: userId}, function(err, community) {
         if (err) return callback(err)
         return callback(null, community)
     })
 }
 
-function getCommunityRequests(userId, callback) {
+let getCommunityRequests = function(userId, callback) {
     Request.find({to: userId}, function(err, requests) {
         if (err) return callback(err)
         return callback(null, requests)
     })
 }
 
-function getSuperUnits(communityId, callback) {
+let getSuperUnits = function(communityId, callback) {
     Unit.find({communityId: communityId}).distinct('superUnit', function(err, superUnits) {
         if (err) return callback(err)
         return callback(null, superUnits)
     })
 }
 
-function getUnits(communityId, callback) {
+let getUnits = function(communityId, callback) {
     Unit.find({communityId: communityId}, function(err, units) {
         if (err) return callback(err)
         return callback(null, units)
     })
 }
 
-function getSecurityGuards(communityId, callback) {
+let getSecurityGuards = function(communityId, callback) {
     
     Community.findOne({_id: communityId}, function(err, community) {
         if (err) return callback(err)
@@ -80,7 +117,7 @@ function getSecurityGuards(communityId, callback) {
     })
 }
 
-function getDataForCommunityDashboard(userId, callback) {
+exports.getDataForCommunityDashboard = function(userId, callback) {
     getCommunity(userId, function(err, community) {
         if (err) return callback(err)
         if (!community) return callback(null, null)
@@ -103,29 +140,47 @@ function getDataForCommunityDashboard(userId, callback) {
     })
 }
 
+exports.newResidentHandler = function(approved, request, fromId, callback) {
+
+    if (request.requestType === 'New Resident Request') {
+        if (approved.includes('yes')) {
+            Unit.findOneAndUpdate({ _id: request.unit }, { $push: { residents: fromId } }, function (err, unit) {
+                if (err) return callback(err)
+                request.remove(function (err, request) {
+                    return callback(null, true)
+                })
+            })
+        } else {
+            request.remove(function (err, request) {
+                return callback(null, false)
+            })
+        }
+    }
+}
+
 // Security Dashboard
 
-function getSecurityCommunity(userId, callback) {
+let getSecurityCommunity = function(userId, callback) {
     Community.findOne({securityId: userId}, function(err, community) {
         if (err) return callback(err)
         return callback(null, community)
     })
 }
 
-function getCommunityGuests(communityId, callback) {
+let getCommunityGuests = function(communityId, callback) {
     Guest.find({communityId: communityId}, function(err, guest) {
         if (err) return callback(err)
         return callback(null, guest)
     })
 }
 
-function getDataForSecDashboard(userId, callback) {
+exports.getDataForSecDashboard = function(userId, callback) {
 
     getSecurityCommunity(userId, function(err, community) {
         if (err) return callback(err)
-        getCommunityGuests(community._id, function(err, guests) {
-            if (err) return callback(err)
-            return callback(null, community, guests)
-        })
+            getCommunityGuests(community._id, function(err, guests) {
+                if (err) return callback(err)
+                return callback(null, community, guests)
+            })
     })
 }

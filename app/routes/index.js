@@ -4,6 +4,7 @@ const passport = require('passport')
 const twilio = require('twilio')('ACf1039d321356e792d4ef420f007a6a9c', '83f9d8f15492477610772f2ab1aac58b')
 
 const cb = require('./callbacks')
+const db = require('./database')
 
 const User = require('../models/user')
 const Community = require('../models/community')
@@ -105,7 +106,7 @@ function getDashboard(req, res) {
 
     if (access == 'security') return res.status(403)
 
-    getDataForDashboard(userId, function(err, units, requests, guests) {
+    db.getDataForDashboard(userId, function(err, units, requests, guests) {
         if (err) return res.status(400)
         
         if(units.length === 0 && req.user.access === 'resident') {
@@ -471,7 +472,6 @@ function sendNewGuestRequest(req, res) {
         if (err) return res.json(err)
         if (!community) return res.json({message: "No community found"})
         communityId = community._id
-
         Unit.findOne({name: unitName, superUnit: superUnit, communityId: communityId}, function(err, unit) {
             if (err) return res.json(err)
             if (!unit) return res.json({message: "No unit found"})
@@ -536,184 +536,9 @@ function redirectToDashboard(userAccess) {
     }
 }
 
-// Dashboard
-
-function getUserUnits(userId, callback) {
-    Unit.find({residents: userId}, function (err, units) {
-        if (err) return callback(err)
-        if (units) return callback(null, units)
-    })
-}
-
-function getUserRequests(userId, callback) {
-    Request.find({to: userId}, function (err, requests) {
-        if (err) return callback(err)
-        if (requests) return callback(null, requests)
-    })
-}
-
-function getUserGuests(unitIds, callback) {
-    Guest.find({unitId: {$in: unitIds}}, function(err, guests) {
-        if (err) return callback(err)
-        if (guests) return callback(null, guests)
-    })
-}
-
-function getDataForDashboard(userId, callback) {
-    
-    getUserUnits(userId, function(err, units) {
-        if (err) return callback(err)
-        getUserRequests(userId, function (err, requests) {
-            if (err) return callback(err)
-            getUserGuests(units.map(unit => unit._id), function(err, guests) {
-                if (err) return callback(err)
-                return callback(null, units, requests, guests)
-            })
-        })
-    })
-}
-
-function newGuestHandler(request, resident, callback) {
-
-    let guest = new Guest()
-
-    if (approved.includes('yes')) {
-        if (req.user.access === 'resident') {
-            guest.name = request.message.split(" is")[0]
-            guest.unitId = request.unit
-            guest.approvedBy = resident._id
-
-            Unit.findById(guest.unitId, function(err, unit) {
-                if (err) return callback(err)
-                if (!unit) return callback(null, null)
-                guest.communityId = unit.communityId
-                guest.status = 'Passed Gate'
-                guest.save(function(err, guest) {
-                    if (err) return callback(err)
-                    io.to("sec" + unit.communityId).emit('new guest', guest)
-                    request.remove(function(err, request) {
-                        return callback(null, true)
-                    })
-                })
-            })
-        }
-    } else {
-        request.remove(function(err, request) {
-            callback(null, false)
-        })
-    }
-}
-
-// Community Dashboard
-
-function getCommunity(userId, callback) {
-    Community.findOne({adminId: userId}, function(err, community) {
-        if (err) return callback(err)
-        return callback(null, community)
-    })
-}
-
-function getCommunityRequests(userId, callback) {
-    Request.find({to: userId}, function(err, requests) {
-        if (err) return callback(err)
-        return callback(null, requests)
-    })
-}
-
-function getSuperUnits(communityId, callback) {
-    Unit.find({communityId: communityId}).distinct('superUnit', function(err, superUnits) {
-        if (err) return callback(err)
-        return callback(null, superUnits)
-    })
-}
-
-function getUnits(communityId, callback) {
-    Unit.find({communityId: communityId}, function(err, units) {
-        if (err) return callback(err)
-        return callback(null, units)
-    })
-}
-
-function getSecurityGuards(communityId, callback) {
-    
-    Community.findOne({_id: communityId}, function(err, community) {
-        if (err) return callback(err)
-        User.find({_id: community.securityId}, function(err, securityUser) {
-            if (err) return callback(err)
-            return callback(null, securityUser)
-        })
-    })
-}
-
-function getDataForCommunityDashboard(userId, callback) {
-    getCommunity(userId, function(err, community) {
-        if (err) return callback(err)
-        if (!community) return callback(null, null)
-        getCommunityRequests(userId, function(err, requests) {
-            if (err) return callback(err)
-            getSuperUnits(community._id, function(err, superUnits) {
-                if (err) return callback(err)
-                getUnits(community._id, function(err, units) {
-                    if (err) return callback(err)
-                    getSecurityGuards(community._id, function(err, securityUser) {
-                        if (err) return callback(err)
-                        superUnits.sort()
-                        units.sort()
-                        securityUser.sort()
-                        return callback(null, community, requests, superUnits, units, securityUser)
-                    })
-                })
-            })
-        })
-    })
-}
-
-function newResidentHandler(approved, request, fromId, callback) {
-
-    if (request.requestType === 'New Resident Request') {
-        if (approved.includes('yes')) {
-            Unit.findOneAndUpdate({ _id: request.unit }, { $push: { residents: fromId } }, function (err, unit) {
-                if (err) return callback(err)
-                request.remove(function (err, request) {
-                    return callback(null, true)
-                })
-            })
-        } else {
-            request.remove(function (err, request) {
-                return callback(null, false)
-            })
-        }
-    }
-}
-
-// Security Dashboard
-
-function getSecurityCommunity(userId, callback) {
-    Community.findOne({securityId: userId}, function(err, community) {
-        if (err) return callback(err)
-        return callback(null, community)
-    })
-}
-
-function getCommunityGuests(communityId, callback) {
-    Guest.find({communityId: communityId}, function(err, guest) {
-        if (err) return callback(err)
-        return callback(null, guest)
-    })
-}
-
-function getDataForSecDashboard(userId, callback) {
-
-    getSecurityCommunity(userId, function(err, community) {
-        if (err) return callback(err)
-        getCommunityGuests(community._id, function(err, guests) {
-            if (err) return callback(err)
-            return callback(null, community, guests)
-        })
-    })
-}
-
-// Twilio
+/**
+ * Twilio
+ */
 
 function notifyResident(residentPhoneNumber, message, callback) {
     twilio.messages.create({
