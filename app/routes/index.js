@@ -12,7 +12,6 @@ const Unit = require('../models/unit')
 const Guest = require('../models/guest')
 const Request = require('../models/request')
 
-
 let server
 let io
 
@@ -166,12 +165,12 @@ function handleRequest(req, res) {
     Request.findById(requestId, function(err, request) {
         if (err) return res.status(400) 
         if (request.requestType == 'New Resident Request') {
-            newResidentHandler(req.body.approved, request, request.from, function(err, success) {
-                if (success) return res.redirect(redirectToDashboard(req.user.access))
+            db.newResidentHandler(req.body.approved, request, request.from, function(err, success) {
+                return res.redirect(redirectToDashboard(req.user.access))
             })
         } else {
-            newGuestHandler(req.body.approved, request, req.user, function(err, success) {
-                if (success) return res.redirect(redirectToDashboard(req.user.access))
+            db.newGuestHandler(req.body.approved, request, req.user, function(err, success) {
+                return res.redirect(redirectToDashboard(req.user.access))
             })
         }
     })
@@ -309,7 +308,7 @@ function standby(req, res) {
 // Community Admin
 
 function getCommunityDashboard(req, res) {
-    getDataForCommunityDashboard(req.user._id, function(err, community, requests, superUnits, units, guards) {
+    db.getDataForCommunityDashboard(req.user._id, function(err, community, requests, superUnits, units, guards) {
         if (err) return res.status(400)
         if (!community) return res.redirect('/createCommunity')
         io.on('connection', function(socket) {
@@ -404,7 +403,7 @@ function getSecurityDashbaoard(req, res) {
         return res.status(403)
     }
 
-    getDataForSecDashboard(req.user._id, function(err, community, guests) {
+    db.getDataForSecDashboard(req.user._id, function(err, community, guests) {
         if (err) return res.status(400)
 
         io.on('connection', function(socket) {
@@ -521,7 +520,7 @@ function isLoggedIn(req, res, next) {
 }
 
 /**
- * Query Functions
+ * Redirect
  */
 
 function redirectToDashboard(userAccess) {
