@@ -3,7 +3,7 @@ const router = express.Router()
 const passport = require('passport')
 const twilio = require('twilio')('ACf1039d321356e792d4ef420f007a6a9c', '83f9d8f15492477610772f2ab1aac58b')
 
-const cb = require('./callbacks')
+// const cb = require('./callbacks')
 const db = require('./database')
 
 const User = require('../models/user')
@@ -18,7 +18,6 @@ let io
 router.initSocket = function(app) {
     server = require('http').Server(app)
 	io = require('socket.io')(server)
-
     return server
 }
 
@@ -37,6 +36,7 @@ router.get('/logout', logOut)
 router.get('/dashboard', isLoggedIn, getDashboard)
 router.post('/addguest/:unitId', isLoggedIn, addGuest)
 router.post('/request/:requestId', isLoggedIn, handleRequest)
+router.post('/sms', smsResponse)
 
 // Onboarding
 router.get('/findCommunity', findCities)
@@ -159,7 +159,7 @@ function handleRequest(req, res) {
     let requestId = req.params.requestId
 
     /**
-     * TODO: Seperate both requests handlers into separate routes
+     * TODO: Seperate both requests handlers into separate routes?
      */
 
     Request.findById(requestId, function(err, request) {
@@ -180,6 +180,12 @@ function logOut(req, res) {
     req.session.destroy(function (err) {
         res.redirect('/')
   })
+}
+
+function smsResponse(req, res) {
+    let twi = require('twilio')
+    let twiml = new twi.TwimlResponse
+    console.log(req.body.Body)
 }
 
 // Onboarding
@@ -445,7 +451,8 @@ function updateGuest(req, res) {
                         
                         io.to(guest.unitId).emit('guest confirmed', guest)
                         
-                        notifyResident('+13106995339', "This is a test", function(err, msg) {
+                        //              Resident        Security
+                        notifyResident('+13106995339', '+17874183263', guest.name + " has passed the gate", function(err, msg) {
                             if (err) return res.status(400)
                         })
                         return res.redirect('/securityDashboard') 
@@ -486,6 +493,11 @@ function sendNewGuestRequest(req, res) {
             request.save(function(err, request) {
                 if (err) return res.json(err)
                 io.to(unit._id).emit('new request', request)
+
+                notifyResident("+1310699533", guestName + " would like to enter the neighborhood.", function(err, msg) {
+                    if (err) return status(400)
+                })
+
                 return res.redirect('/securityDashboard')
             })
         })
@@ -539,10 +551,10 @@ function redirectToDashboard(userAccess) {
  * Twilio
  */
 
-function notifyResident(residentPhoneNumber, message, callback) {
+function notifyResident(residentPhoneNumber, securityPhoneNumber, message, callback) {
     twilio.messages.create({
         to: residentPhoneNumber,
-        from: '+17874183263',
+        from: securityPhoneNumber,
         body: message
     }, function(err, message) {
         if (err) return callback(err)
