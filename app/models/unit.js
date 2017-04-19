@@ -19,6 +19,7 @@ const unitSchema = mongoose.Schema({
     residents: {
         type: [String],   
     }
+
 })
 
 module.exports = mongoose.model("unit", unitSchema)

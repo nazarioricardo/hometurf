@@ -36,7 +36,7 @@ router.get('/logout', logOut)
 router.get('/dashboard', isLoggedIn, getDashboard)
 router.post('/addguest/:unitId', isLoggedIn, addGuest)
 router.post('/request/:requestId', isLoggedIn, handleRequest)
-router.post('/sms', smsResponse)
+router.post('/sms/guestAtGate', guestAtGate)
 
 // Onboarding
 router.get('/findCommunity', findCities)
@@ -182,10 +182,21 @@ function logOut(req, res) {
   })
 }
 
-function smsResponse(req, res) {
+function guestAtGate(req, res) {
     let twi = require('twilio')
     let twiml = new twi.TwimlResponse
-    console.log(req.body.Body)
+    let message = req.body.Body.toLowerCase()
+
+    User.findOne({phoneNumber: req.body.From}, function(err, user) {
+        Request.findOneAndUpdate({to: user._id}, function(err, request) { 
+            if (err) return res.status(400)
+            if (!request) console.log('No request')
+            db.newGuestHandler([message], request, user, function(err, success) {
+                if (err) return res.status(400)
+                console.log("Success!")
+            })
+        })
+    })
 }
 
 // Onboarding
