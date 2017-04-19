@@ -188,9 +188,10 @@ function guestAtGate(req, res) {
     let message = req.body.Body.toLowerCase()
 
     User.findOne({phoneNumber: req.body.From}, function(err, user) {
+
         Request.findOneAndUpdate({to: user._id}, function(err, request) { 
             if (err) return res.status(400)
-            if (!request) console.log('No request')
+            if (!request) return res.status(404)
             db.newGuestHandler([message], request, user, function(err, success) {
                 if (err) return res.status(400)
                 console.log("Success!")
