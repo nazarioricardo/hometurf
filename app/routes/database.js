@@ -45,9 +45,11 @@ exports.getDataForDashboard = function(userId, callback) {
     })
 }
 
-exports.newGuestHandler = function(approved, request, resident, callback) {
+exports.unexpectedGuestHandler = function(approved, request, resident, callback) {
 
     let guest = new Guest()
+
+    console.log("Approved? " + approved)
 
     if (approved.includes('yes')) {
         if (resident.access === 'resident') {
@@ -62,9 +64,8 @@ exports.newGuestHandler = function(approved, request, resident, callback) {
                 guest.status = 'Passed Gate'
                 guest.save(function(err, guest) {
                     if (err) return callback(err)
-                    io.to("sec" + unit.communityId).emit('new guest', guest)
                     request.remove(function(err, request) {
-                        return callback(null, true)
+                        return callback(null, unit, guest)
                     })
                 })
             })

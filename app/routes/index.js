@@ -1,9 +1,8 @@
 const express = require('express')
 const router = express.Router()
 const passport = require('passport')
-const twilio = require('twilio')('ACf1039d321356e792d4ef420f007a6a9c', '83f9d8f15492477610772f2ab1aac58b')
-
-// const cb = require('./callbacks')
+const twilio = require('twilio')
+const twiClient = twilio('ACf1039d321356e792d4ef420f007a6a9c', '83f9d8f15492477610772f2ab1aac58b')
 const db = require('./database')
 
 const User = require('../models/user')
@@ -166,10 +165,12 @@ function handleRequest(req, res) {
         if (err) return res.status(400) 
         if (request.requestType == 'New Resident Request') {
             db.newResidentHandler(req.body.approved, request, request.from, function(err, success) {
+                io.to("sec" + unit.communityId).emit('new guest', guest)
                 return res.redirect(redirectToDashboard(req.user.access))
             })
         } else {
-            db.newGuestHandler(req.body.approved, request, req.user, function(err, success) {
+            db.unexpectedGuestHandler(req.body.approved, request, req.user, function(err, unit, guest) {
+                io.to("sec" + unit.communityId).emit('new guest', guest)
                 return res.redirect(redirectToDashboard(req.user.access))
             })
         }
@@ -183,18 +184,23 @@ function logOut(req, res) {
 }
 
 function guestAtGate(req, res) {
-    let twi = require('twilio')
-    let twiml = new twi.TwimlResponse
-    let message = req.body.Body.toLowerCase()
+    
+    let twiml = new twilio.TwimlResponse
+    let reply = req.body.Body.toLowerCase()
+
+    console.log(req.body.From)
 
     User.findOne({phoneNumber: req.body.From}, function(err, user) {
-
-        Request.findOneAndUpdate({to: user._id}, function(err, request) { 
+        console.log(user)
+        Request.findOne({to: user._id}, function(err, request) { 
             if (err) return res.status(400)
+            console.log("Request " + request)
             if (!request) return res.status(404)
-            db.newGuestHandler([message], request, user, function(err, success) {
+            db.unexpectedGuestHandler([reply], request, user, function(err, unit, guest) {
                 if (err) return res.status(400)
+                io.to("sec" + unit.communityId).emit('new guest', guest)
                 console.log("Success!")
+                return res.status(200)
             })
         })
     })
@@ -464,7 +470,7 @@ function updateGuest(req, res) {
                         io.to(guest.unitId).emit('guest confirmed', guest)
                         
                         //              Resident        Security
-                        notifyResident('+13106995339', '+17874183263', guest.name + " has passed the gate", function(err, msg) {
+                        notifyResident('+13106995339', '+17874183263', guest.name + " has passed the gate.", function(err, msg) {
                             if (err) return res.status(400)
                         })
                         return res.redirect('/securityDashboard') 
@@ -487,9 +493,11 @@ function sendNewGuestRequest(req, res) {
     request.requestType = "Guest Request"
 
     Community.findOne({securityId: req.user._id}, function(err, community) {
+        
         if (err) return res.json(err)
         if (!community) return res.json({message: "No community found"})
         communityId = community._id
+        
         Unit.findOne({name: unitName, superUnit: superUnit, communityId: communityId}, function(err, unit) {
             if (err) return res.json(err)
             if (!unit) return res.json({message: "No unit found"})
@@ -504,12 +512,12 @@ function sendNewGuestRequest(req, res) {
 
             request.save(function(err, request) {
                 if (err) return res.json(err)
+
                 io.to(unit._id).emit('new request', request)
 
-                notifyResident("+1310699533", guestName + " would like to enter the neighborhood.", function(err, msg) {
-                    if (err) return status(400)
+                notifyResident("+13106995339", "+17874183263", guestName + " would like to enter the neighborhood.", function(err, msg) {
+                    if (err) return res.status(400)
                 })
-
                 return res.redirect('/securityDashboard')
             })
         })
@@ -564,7 +572,7 @@ function redirectToDashboard(userAccess) {
  */
 
 function notifyResident(residentPhoneNumber, securityPhoneNumber, message, callback) {
-    twilio.messages.create({
+    twiClient.messages.create({
         to: residentPhoneNumber,
         from: securityPhoneNumber,
         body: message
